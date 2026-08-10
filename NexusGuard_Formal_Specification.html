@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="Yassine Hakkache">
+<title>NexusGuard — Formal Specification v2 · Yassine Hakkache</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --paper:#f6f4ee;
+    --ink:#1c2321;
+    --ink-soft:#4a534f;
+    --rule:#c9c2ae;
+    --accent:#2f5d50;      /* deep forest — "verified" green, security-log tone */
+    --accent-soft:#e4ebe6;
+    --alert:#8a3324;       /* muted brick-red — "denied / threat" tone */
+    --alert-soft:#f1e4de;
+    --tag-bg:#1c2321;
+    --tag-fg:#f6f4ee;
+    --mono:'IBM Plex Mono', ui-monospace, monospace;
+    --serif:'Source Serif 4', Georgia, serif;
+    --sans:'Inter', -apple-system, sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--serif);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--accent); color:var(--paper); }
+
+  /* subtle paper grain */
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    pointer-events:none;
+    opacity:.035;
+    background-image:
+      repeating-linear-gradient(0deg, #000 0px, transparent 1px, transparent 2px, #000 3px);
+    mix-blend-mode:multiply;
+    z-index:1;
+  }
+
+  a{ color:var(--accent); }
+
+  .wrap{ max-width:920px; margin:0 auto; padding:0 32px; position:relative; z-index:2;}
+
+  /* ---------- masthead ---------- */
+  .masthead{
+    border-bottom:1px solid var(--ink);
+    padding:28px 0 18px;
+    margin-bottom:8px;
+  }
+  .masthead-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:var(--mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .masthead-row .lock{ color: var(--accent); font-weight:600; }
+
+  header.title-block{
+    padding:56px 0 40px;
+    border-bottom:3px double var(--ink);
+  }
+  .kicker{
+    font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent); margin-bottom:18px; display:flex; align-items:center; gap:10px;
+  }
+  .kicker::before{ content:""; width:26px; height:1px; background:var(--accent); display:inline-block; }
+  h1{
+    font-family:var(--serif); font-weight:700; font-size:clamp(34px,5vw,54px);
+    line-height:1.08; letter-spacing:-.01em; margin:0 0 18px;
+  }
+  h1 em{ font-style:italic; color:var(--accent); }
+  .subtitle{
+    font-family:var(--sans); font-weight:400; font-size:18px; color:var(--ink-soft);
+    max-width:640px; margin-bottom:28px;
+  }
+  .byline{
+    display:flex; flex-wrap:wrap; gap:28px;
+    font-family:var(--mono); font-size:12.5px; color:var(--ink-soft);
+    border-top:1px solid var(--rule); padding-top:18px;
+  }
+  .byline strong{ color:var(--ink); display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; margin-bottom:4px; font-weight:600;}
+
+  /* ---------- abstract ---------- */
+  .abstract{
+    margin:44px 0 8px; padding:26px 30px; background:var(--accent-soft);
+    border-left:3px solid var(--accent);
+  }
+  .abstract .label{
+    font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--accent); font-weight:600; margin-bottom:10px;
+  }
+  .abstract p{ margin:0; font-size:15.5px; color:var(--ink); }
+
+  /* ---------- toc ---------- */
+  nav.toc{
+    margin:36px 0 56px; padding:20px 0; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule);
+  }
+  nav.toc .label{
+    font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:12px;
+  }
+  nav.toc ol{ list-style:none; margin:0; padding:0; columns:2; gap:8px 40px; }
+  nav.toc li{ break-inside:avoid; margin-bottom:6px; font-family:var(--sans); font-size:14px; }
+  nav.toc a{ text-decoration:none; color:var(--ink); }
+  nav.toc a:hover{ color:var(--accent); text-decoration:underline; }
+  nav.toc .num{ font-family:var(--mono); color:var(--accent); margin-right:8px; }
+
+  /* ---------- sections ---------- */
+  section{ margin:0 0 58px; scroll-margin-top:24px; }
+  .sec-head{
+    display:flex; align-items:baseline; gap:14px; margin-bottom:22px;
+  }
+  .sec-num{
+    font-family:var(--mono); font-size:14px; color:var(--accent); font-weight:600;
+    border:1px solid var(--accent); border-radius:2px; padding:2px 8px;
+  }
+  h2{
+    font-family:var(--serif); font-weight:600; font-size:26px; margin:0; letter-spacing:-.005em;
+  }
+  h3{
+    font-family:var(--serif); font-weight:600; font-size:19px; margin:30px 0 12px; color:var(--ink);
+  }
+  p{ font-size:16px; color:var(--ink); margin:0 0 16px; }
+  .lede{ font-size:17px; color:var(--ink-soft); }
+
+  /* ---------- symbol / definitions table ---------- */
+  .deftable{
+    width:100%; border-collapse:collapse; margin:18px 0 26px;
+    font-family:var(--sans); font-size:14.5px;
+  }
+  .deftable th{
+    text-align:left; font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink-soft); font-weight:600; padding:0 0 8px; border-bottom:1px solid var(--ink);
+  }
+  .deftable td{ padding:10px 14px 10px 0; border-bottom:1px solid var(--rule); vertical-align:top; }
+  .deftable td:first-child{ font-family:var(--mono); color:var(--accent); font-weight:600; white-space:nowrap; }
+  .deftable tr:last-child td{ border-bottom:1px solid var(--ink); }
+
+  /* ---------- formula blocks ---------- */
+  /* ---------- formula rendering safety ---------- */
+  .formula mjx-container[jax="CHTML"][display="true"]{
+    display:block;
+    max-width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    padding:3px 2px 7px;
+    font-size:clamp(0.78rem, 1.7vw, 1rem) !important;
+  }
+  .formula-caption mjx-container{
+    max-width:100%;
+  }
+  @media (max-width:640px){
+    .formula mjx-container[jax="CHTML"][display="true"]{
+      font-size:.74rem !important;
+    }
+    .formula-caption{
+      font-size:11.5px;
+      line-height:1.65;
+    }
+  }
+
+  .formula{
+    position:relative;
+    margin:22px 0 28px;
+    padding:30px 28px 24px;
+    background:#fff;
+    border:1px solid var(--ink);
+    box-shadow:5px 5px 0 var(--rule);
+    overflow:hidden;
+  }
+  .formula-html{
+    text-align:center;
+    padding:30px 34px 28px;
+  }
+  .math-line{
+    display:flex;
+    align-items:baseline;
+    justify-content:center;
+    gap:14px;
+    margin:7px 0;
+    font-family:var(--serif);
+    font-size:22px;
+    line-height:1.35;
+    color:var(--ink);
+  }
+  .math-var{
+    font-style:italic;
+    font-weight:500;
+  }
+  .math-op{
+    font-style:normal;
+  }
+  .math-call{
+    font-style:italic;
+  }
+  .formula-html sub{
+    font-size:.65em;
+    vertical-align:-.25em;
+  }
+
+
+  .eq-5a{
+    position:relative;
+    padding:34px 38px 30px;
+    overflow:hidden;
+  }
+  .policy-line{
+    display:flex;
+    align-items:baseline;
+    justify-content:center;
+    gap:10px;
+    margin:4px 0 30px;
+    font-family:var(--serif);
+    font-size:21px;
+    line-height:1.35;
+    text-align:center;
+    flex-wrap:wrap;
+  }
+  .needs-human-block{
+    display:grid;
+    grid-template-columns:190px minmax(0, 1fr);
+    align-items:start;
+    gap:24px;
+    width:min(900px, 100%);
+    margin:0 auto;
+  }
+  .needs-human-title{
+    font-family:var(--serif);
+    font-size:20px;
+    line-height:1.45;
+    white-space:nowrap;
+    padding-top:7px;
+  }
+  .cases{
+    position:relative;
+    padding:5px 0 5px 34px;
+    min-width:0;
+    width:100%;
+  }
+  .cases:before{
+    content:"{";
+    position:absolute;
+    left:0;
+    top:-10px;
+    font-size:112px;
+    line-height:1;
+    font-family:var(--serif);
+    font-weight:300;
+  }
+  .case-row{
+    display:grid;
+    grid-template-columns:minmax(210px, 250px) minmax(0, 1fr);
+    gap:18px;
+    align-items:baseline;
+    margin:9px 0;
+    line-height:1.45;
+  }
+  .case-row span:first-child{
+    font-style:italic;
+    white-space:nowrap;
+  }
+  .case-row span:last-child{
+    font-size:20px;
+    white-space:normal;
+  }
+  @media (max-width: 720px){
+    .eq-5a{
+      padding:32px 20px 26px;
+    }
+    .policy-line{
+      font-size:20px;
+      margin-bottom:24px;
+    }
+    .needs-human-block{
+      grid-template-columns:1fr;
+      gap:8px;
+    }
+    .needs-human-title{
+      font-size:20px;
+    }
+    .cases{
+      padding-left:30px;
+    }
+    .case-row{
+      grid-template-columns:1fr;
+      gap:1px;
+      margin:11px 0;
+    }
+    .case-row span:first-child{
+      white-space:normal;
+    }
+    .case-row span:last-child{
+      font-size:17px;
+    }
+  }
+
+  .formula .eq-tag{
+    position:absolute; top:-12px; right:16px;
+    background:var(--tag-bg); color:var(--tag-fg);
+    font-family:var(--mono); font-size:11px; letter-spacing:.05em;
+    padding:3px 10px; border-radius:2px;
+  }
+  .formula-caption{
+    font-family:var(--mono); font-size:12.5px; color:var(--ink-soft);
+    margin-top:-16px; margin-bottom:26px; padding-left:2px;
+  }
+  .formula-caption b{ color: var(--ink); }
+
+  /* ---------- pipeline diagram (signature element) ---------- */
+  .topology{
+    margin:30px 0 20px;
+    border:1px solid #cfd4d0;
+    background:#fff;
+    padding:24px 26px 20px;
+  }
+  .topology-head{
+    display:flex;
+    justify-content:space-between;
+    padding-bottom:13px;
+    border-bottom:1px solid #e2e5e2;
+    font-family:var(--mono);
+    font-size:9px;
+    letter-spacing:.16em;
+    color:#758079;
+  }
+  .topology-main{
+    display:grid;
+    grid-template-columns:1fr 74px 1fr 92px 1fr;
+    align-items:center;
+    gap:0;
+    padding:30px 0 14px;
+  }
+  .topology-node{
+    min-height:118px;
+    border:1px solid #c8ceca;
+    padding:17px 14px 14px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    background:#fff;
+    position:relative;
+  }
+  .topology-node .node-num{
+    position:absolute;
+    top:8px;
+    left:10px;
+    font-family:var(--mono);
+    font-size:8px;
+    color:#89918c;
+  }
+  .topology-node strong{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.08em;
+    color:#27302c;
+    margin-bottom:7px;
+  }
+  .topology-node em{
+    font-family:var(--serif);
+    font-size:17px;
+    color:#4c5d55;
+  }
+  .topology-node small{
+    margin-top:8px;
+    font-family:var(--mono);
+    font-size:9px;
+    color:#7a827e;
+  }
+  .topology-node.blue{border-top:3px solid #66877a;}
+  .topology-node.orch{border-top:3px solid #485952;}
+  .topology-node.human{border-top:3px solid #3f7767;}
+  .topology-node.red{border-top:3px solid #8a6256;}
+
+  .topology-edge{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    color:#6e7772;
+  }
+  .topology-edge span{
+    font-family:var(--mono);
+    font-size:8px;
+    text-align:center;
+    white-space:nowrap;
+  }
+  .topology-edge b{
+    font-family:var(--serif);
+    font-size:24px;
+    font-weight:400;
+  }
+
+  .topology-branches{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:24px;
+    padding:0 13%;
+  }
+  .branch-line{
+    border-top:1px dashed #bfc7c2;
+    padding-top:9px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    font-family:var(--mono);
+    font-size:9px;
+    color:#68716c;
+  }
+  .branch-line b{
+    font-size:18px;
+    font-weight:400;
+  }
+  .branch-label{color:#385f53;}
+
+  .topology-verify{
+    display:grid;
+    grid-template-columns:260px 1fr;
+    gap:28px;
+    align-items:center;
+    margin-top:12px;
+    padding-top:20px;
+    border-top:1px solid #e2e5e2;
+  }
+  .verify-routes{
+    display:grid;
+    gap:8px;
+  }
+  .route{
+    display:grid;
+    grid-template-columns:auto auto 22px 1fr;
+    align-items:center;
+    gap:8px;
+    padding:8px 10px;
+    border:1px solid #e0e3e0;
+    font-family:var(--mono);
+    font-size:9px;
+    color:#626b66;
+  }
+  .route b{color:#37443e;}
+  .route i{
+    font-family:var(--serif);
+    font-size:18px;
+    font-style:normal;
+    text-align:center;
+  }
+  .route.retry{border-left:3px solid #9a7359;}
+  .route.terminal{grid-template-columns:auto auto 22px 1fr;}
+  .route code{
+    font-size:9px;
+    background:#f1ece0;
+    padding:2px 4px;
+  }
+
+  .topology-foot{
+    margin-top:18px;
+    padding-top:13px;
+    border-top:1px solid #e2e5e2;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+    font-family:var(--mono);
+    font-size:9px;
+    line-height:1.6;
+    color:#69716d;
+  }
+  .topology-foot b{color:#303a35;}
+  .topology-foot code{
+    background:#f1ece0;
+    padding:2px 4px;
+  }
+
+  @media(max-width:800px){
+    .topology-main{
+      grid-template-columns:1fr;
+      gap:8px;
+    }
+    .topology-edge{
+      flex-direction:row;
+      justify-content:center;
+    }
+    .topology-edge b{transform:rotate(90deg);}
+    .topology-branches{
+      grid-template-columns:1fr;
+      padding:0;
+    }
+    .topology-verify{
+      grid-template-columns:1fr;
+    }
+    .topology-foot{
+      grid-template-columns:1fr;
+    }
+  }
+
+  /* ---------- code / verbatim ---------- */
+  code, .kcode{
+    font-family:var(--mono); font-size:.92em; background:#efe9d8; padding:1px 6px; border-radius:2px; color:#33413a;
+  }
+
+  /* ---------- references / colophon ---------- */
+  footer{
+    border-top:3px double var(--ink); margin-top:70px; padding:36px 0 60px;
+  }
+  .colophon{
+    display:grid; grid-template-columns:1fr 1fr; gap:32px;
+    font-family:var(--sans); font-size:13px; color:var(--ink-soft);
+  }
+  .colophon .label{
+    font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink); margin-bottom:8px; font-weight:600;
+  }
+
+  @media (max-width:640px){
+    .wrap{ padding:0 18px; }
+    nav.toc ol{ columns:1; }
+    .colophon{ grid-template-columns:1fr; }
+    .pipeline-row{ flex-direction:column; align-items:stretch; }
+    .arrow{ transform:rotate(90deg); text-align:center; }
+    .formula{ padding:18px 16px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+  }
+
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+/* ===== CLEAN RESEARCH-NOTE OVERRIDES ===== */
+body{background:#fff;color:#171a19;font-family:var(--serif);line-height:1.62;}
+body::before{display:none;}
+.wrap{max-width:900px;padding:0 28px;}
+.masthead{padding:20px 0 12px;margin-bottom:0;border-bottom:1px solid #d7d7d2;}
+.masthead-row{font-size:10px;color:#737873;}
+.masthead-row .lock{color:#2f5d50;}
+header.title-block{padding:42px 0 30px;border-bottom:1px solid #bfc3bf;}
+.kicker{font-size:10.5px;margin-bottom:14px;letter-spacing:.12em;}
+h1{font-size:clamp(31px,4.5vw,48px);line-height:1.08;margin-bottom:14px;}
+.subtitle{max-width:760px;color:#555c58;font-size:16px;}
+.byline{display:grid;grid-template-columns:repeat(3,1fr);gap:7px 22px;margin-top:22px;padding-top:14px;border-top:1px solid #e2e3df;font-family:var(--mono);font-size:10px;color:#626864;}
+.byline strong{display:block;color:#252a28;font-weight:600;text-transform:uppercase;font-size:9px;letter-spacing:.08em;margin-bottom:2px;}
+.abstract{display:grid;grid-template-columns:90px 1fr;gap:20px;padding:24px 0;border-bottom:1px solid #e2e3df;}
+.abstract .label,.toc .label,.colophon .label{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#737873;}
+.abstract p{margin:0;color:#4e5551;font-size:14px;}
+.toc{padding:20px 0 26px;border-bottom:1px solid #e2e3df;}
+.toc ol{display:flex;flex-wrap:wrap;gap:7px 20px;margin:8px 0 0;padding:0;list-style:none;}
+.toc li{font-family:var(--mono);font-size:10px;}
+.toc .num{color:#2f5d50;margin-right:6px;}
+section{padding:44px 0 0;}
+.sec-head{border-bottom:1px solid #cfd2cf;padding-bottom:10px;margin-bottom:18px;}
+.sec-num{border:0;background:none;color:#2f5d50;font-family:var(--mono);font-size:10px;padding:0;margin-right:8px;}
+h2{font-size:27px;line-height:1.2;}
+.lede{font-size:15px;color:#555c58;max-width:780px;margin:0 0 18px;}
+h3{font-size:18px;margin:30px 0 10px;}
+.formula{margin:18px 0 8px;padding:25px 22px;background:#fff;border:1px solid #d2d5d2;box-shadow:none;overflow-x:auto;overflow-y:hidden;}
+.formula .eq-tag{top:0;right:0;border-radius:0;background:#eef1ee;color:#4e5a54;font-size:8px;padding:4px 7px;}
+.formula-caption{margin:0 4px 20px;color:#707772;font-family:var(--mono);font-size:10px;line-height:1.65;}
+.formula mjx-container[jax="CHTML"][display="true"]{max-width:none;font-size:88% !important;}
+.deftable{width:100%;border-collapse:collapse;margin:18px 0 24px;font-size:12px;}
+.deftable th{text-align:left;font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:#707772;font-weight:500;border-bottom:1px solid #aeb4af;padding:8px 9px;}
+.deftable td{padding:9px;border-bottom:1px solid #e0e2df;vertical-align:top;}
+.pipeline{border:1px solid #d2d5d2;background:#fff;box-shadow:none;padding:22px;}
+.pipeline-row{gap:16px;overflow-x:auto;padding-bottom:4px;}
+.node{border:1px solid #cbd0cc;background:#fff;box-shadow:none;min-width:150px;padding:13px 12px;}
+.node.gate{border-color:#9ab0a6;background:#f8faf8;}
+.arrow{color:#7a827d;}
+.retry-note{margin-top:18px;padding-top:14px;border-top:1px solid #e1e3e0;font-family:var(--mono);font-size:9.5px;line-height:1.9;color:#626964;}
+footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
+.colophon{display:grid;grid-template-columns:1fr 1fr;gap:28px;}
+.colophon p{font-size:10px;color:#6a716c;line-height:1.7;}
+.eq-5a{overflow:hidden;}
+@media(max-width:700px){
+  .wrap{padding:0 18px;}
+  .byline{grid-template-columns:1fr 1fr;}
+  .abstract{grid-template-columns:1fr;gap:7px;}
+  .colophon{grid-template-columns:1fr;}
+  .formula{padding:22px 14px;}
+  .formula mjx-container[jax="CHTML"][display="true"]{font-size:72% !important;}
+}
+
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="masthead-row">
+      <span>NEXUSGUARD · FORMAL SPECIFICATION</span>
+      <span class="lock">SOURCE-RECONCILED</span>
+    </div>
+  </div>
+
+  <header class="title-block">
+    <div class="kicker">Formal Specification · v2</div>
+    <h1>Multi-Agent LLM Systems Autonomously<br>Detect and <em>Mitigate</em> Threats in Kubernetes</h1>
+    <p class="subtitle">A symbolic account of the system's detect → decide → gate → verify cycle.</p>
+    <div class="byline">
+      <div><strong>Author</strong>Yassine Hakkache</div>
+      <div><strong>System</strong>Multi-Agent LLM Kubernetes Defense (POC)</div>
+      <div><strong>Substrate</strong>Kubernetes · LangGraph · ReAct agents</div>
+      <div><strong>Scope</strong>Blue / Orchestrator / Human Gate / Red</div>
+      <div><strong>Status</strong>Source-reconciled · implementation-verified</div>
+    </div>
+  </header>
+
+  <div class="abstract">
+    <div class="label">Abstract</div>
+    <p>The system is framed as a tuple $\mathcal{F}$ of five state spaces and three agents mediated by a human approval gate. This note formalizes detection, mitigation selection, human-gated transition, and bounded-retry verification, with each definition tied to the executable implementation.</p>
+  </div>
+
+  <nav class="toc">
+    <div class="label">Contents</div>
+    <ol>
+      <li><span class="num">01</span><a href="#framework">General framework</a></li>
+      <li><span class="num">02</span><a href="#detection">Detection &amp; threat assessment</a></li>
+      <li><span class="num">03</span><a href="#selection">Mitigation selection</a></li>
+      <li><span class="num">04</span><a href="#gate">Human-gated transition</a></li>
+      <li><span class="num">05</span><a href="#verify">Verification &amp; bounded retry</a></li>
+      <li><span class="num">06</span><a href="#pipeline">Pipeline topology</a></li>
+
+    </ol>
+  </nav>
+
+  <!-- 01 -->
+  <section id="framework">
+    <div class="sec-head"><span class="sec-num">01</span><h2>General framework</h2></div>
+    <p class="lede">The system is defined as an 8-tuple over state, telemetry, action, and agent spaces, coordinated by a static policy table.</p>
+
+    <div class="formula">
+      <span class="eq-tag">EQ. 1</span>
+      $$\mathcal{F} = \langle \mathcal{S}, \mathcal{T}, \mathcal{A}, \mathcal{B}, \mathcal{O}, \mathcal{H}, \mathcal{R}, \Pi \rangle$$
+    </div>
+
+    <table class="deftable">
+      <tr><th>Symbol</th><th>Meaning</th><th>Realized as</th></tr>
+      <tr><td>$\mathcal{S}$</td><td>Infrastructure states</td><td>live Kubernetes cluster state</td></tr>
+      <tr><td>$\mathcal{T}$</td><td>Telemetry observations</td><td>pod logs, K8s events</td></tr>
+      <tr><td>$\mathcal{A}$</td><td>Mitigation actions</td><td><span class="kcode">block_ip</span>, <span class="kcode">isolate_pod</span>, …</td></tr>
+      <tr><td>$\mathcal{B}$</td><td>Detection agent</td><td>Blue Team ReAct agent</td></tr>
+      <tr><td>$\mathcal{O}$</td><td>Orchestration agent</td><td>Orchestrator ReAct agent</td></tr>
+      <tr><td>$\mathcal{H}$</td><td>Human approval gate</td><td>ConfigMap-backed approval store</td></tr>
+      <tr><td>$\mathcal{R}$</td><td>Verification agent</td><td>Red Team ReAct agent</td></tr>
+      <tr><td>$\Pi$</td><td>Risk-tier policy</td><td><span class="kcode">ACTION_RISK_TIERS</span> (static dict)</td></tr>
+    </table>
+  </section>
+
+  <!-- 02 -->
+  <section id="detection">
+    <div class="sec-head"><span class="sec-num">02</span><h2>Detection &amp; threat assessment</h2></div>
+    <p class="lede">The Blue Team agent maps raw telemetry into a deterministic threat score and applies a fixed detection threshold of 45.</p>
+
+    <div class="formula">
+      <span class="eq-tag">EQ. 2</span>
+      $$\mathcal{B}(\tau_t) = (v_t,\ q_t,\ \iota_t)$$
+    </div>
+    <div class="formula-caption"><b>where</b> $q_t \in [0,100]$ is the heuristic threat score, $\iota_t$ the extracted indicators of compromise.</div>
+
+    <div class="formula">
+      <span class="eq-tag">EQ. 3</span>
+      $$
+      v_t =
+      \begin{cases}
+      \text{THREAT DETECTED}, & q_t \geq \theta \\
+      \text{SUSPICIOUS / SAFE}, & q_t < \theta
+      \end{cases}
+      \qquad \theta = 45
+      $$
+    </div>
+
+    <p class="implementation-note"><span>Implementation</span> <span class="kcode">score_anomalies()</span> uses threshold 45/100 and assigns CRITICAL at 70+. The executable verdict is tiered rather than binary.</p>
+
+    <h3>Threat-score composition</h3>
+    <p>$q_t$ is a deterministic sum over matched log-pattern categories, with repeated hits increasing the contribution of the same category and each category saturating at $2w_c$.</p>
+
+    <div class="formula">
+      <span class="eq-tag">EQ. 3a</span>
+      $$
+      q_t = \min\!\left(100,\ \sum_{c\,\in\,C} \min\!\Big(w_c + (h_c-1)\cdot\max(2,\lfloor w_c/4\rfloor),\ 2w_c\Big)\right)
+      $$
+    </div>
+    <div class="formula-caption">$C=$ {auth_failure, brute_force, injection, recon, exfiltration, privilege_escalation, crypto_mining, container_escape}. $w_c$ is the base weight and $h_c$ is the regex hit count. Repeated hits increase the category contribution with diminishing returns until the category saturates at $2w_c$.</div>
+
+    <div class="principle-box">
+      <div class="principle-label">FORMAL DESIGN PRINCIPLE</div>
+      <p><strong>No double counting.</strong> A raw authentication failure is not itself an attack. The attack-oriented <span class="kcode">brute_force</span> category should be triggered only when the detection rule identifies a brute-force pattern. Its observed volume is represented by $h_{\text{brute}}$; no independent $\beta(h_{\text{auth}})$ term is introduced.</p>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section id="selection">
+    <div class="sec-head"><span class="sec-num">03</span><h2>Mitigation selection</h2></div>
+    <p class="lede">The Orchestrator selects an action by LLM reasoning over the current state and a static risk-tier policy — not by optimizing a closed-form objective.</p>
+
+    <div class="formula formula-html">
+      <span class="eq-tag">EQ. 4</span>
+      <div class="math-line">
+        <span class="math-var">φᵢ</span>
+        <span class="math-op">=</span>
+        <span>(toolᵢ, argsᵢ, obsᵢ)</span>
+      </div>
+      <div class="math-line">
+        <span class="math-var">φᵢ</span>
+        <span class="math-op">∼</span>
+        <span class="math-call">𝒪<sub>LLM</sub>(s<sub>t</sub>, ι<sub>t</sub>, Π, φ<sub>&lt;i</sub>)</span>
+      </div>
+      <div class="math-line">
+        <span class="math-var">a<sub>t</sub></span>
+        <span class="math-op">=</span>
+        <span>(tool<sub>n</sub>, args<sub>n</sub>)</span>
+      </div>
+    </div>
+    <div class="formula-caption">The Orchestrator builds a ReAct trajectory step by step. Each tool call is conditioned on the current incident state, the static risk-tier policy, and previous tool observations; the selected mitigation is the final tool call $a_t=(\text{tool}_n,\text{args}_n)$. The risk tier $\Pi(a_t) \in \{\text{LOW},\text{MEDIUM},\text{HIGH},\text{CRITICAL}\}$ is consulted through <span class="kcode">classify_action_risk</span>.</div>
+    <p class="implementation-note"><span>Implementation</span> No numerical gain/cost function is computed in <span class="kcode">orchestrator_tools.py</span>; mitigation selection is not an argmax over a scored action space.</p>
+  </section>
+
+  <!-- 04 -->
+  <section id="gate">
+    <div class="sec-head"><span class="sec-num">04</span><h2>Human-gated state transition</h2></div>
+    <p class="lede">The workflow classifies the proposed action by risk tier before executing the mutation; HIGH and CRITICAL tiers require a human decision.</p>
+
+    <div class="formula">
+      <span class="eq-tag">EQ. 5</span>
+      $$\mathcal{H}(a_t,\Pi) \in \{\ \text{approved},\ \text{rejected},\ \text{pending}\ \}$$
+    </div>
+    <div class="formula-caption">Implemented in <b>approval_store.py</b> as ConfigMap-persisted request status — a 3-state outcome, not the binary $\{0,1\}$ used in the first draft.</div>
+
+    <div class="formula formula-html eq-5a">
+      <span class="eq-tag">EQ. 5a</span>
+
+      <div class="policy-line">
+        <span class="math-var">Π</span>
+        <span class="math-op">:</span>
+        <span>𝒜 → {LOW, MEDIUM, HIGH, CRITICAL}</span>
+      </div>
+
+      <div class="needs-human-block">
+        <div class="needs-human-title">
+          <span class="math-var">needs_human</span>(<span class="math-var">a</span>) =
+        </div>
+
+        <div class="cases">
+          <div class="case-row">
+            <span>¬ AUTO_APPROVE_LOW</span>
+            <span>if Π(a) = LOW</span>
+          </div>
+          <div class="case-row">
+            <span>¬ AUTO_APPROVE_MEDIUM</span>
+            <span>if Π(a) = MEDIUM</span>
+          </div>
+          <div class="case-row">
+            <span>true</span>
+            <span>if Π(a) ∈ {HIGH, CRITICAL}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="formula-caption">$\Pi$ is a total function over every registered action; an unregistered action is mapped fail-safe to HIGH. The two config flags are the only free parameters — a single flag flip removes the human requirement from an entire tier.</div>
+
+    <div class="formula">
+      <span class="eq-tag">EQ. 6</span>
+      $$
+      s_{t+1} =
+      \begin{cases}
+      M(s_t,\ a_t), & \mathcal{H}(a_t,\Pi) = \text{approved} \\[4pt]
+      s_t, & \text{otherwise}
+      \end{cases}
+      $$
+    </div>
+
+    <h3>Risk tier assignment</h3>
+    <table class="deftable">
+      <tr><th>Tier</th><th>Human required?</th><th>Example action</th></tr>
+      <tr><td>LOW</td><td>no (auto-logged)</td><td><span class="kcode">check_network_policies</span></td></tr>
+      <tr><td>MEDIUM</td><td>configurable — <span class="kcode">AUTO_APPROVE_MEDIUM</span></td><td><span class="kcode">block_ip</span></td></tr>
+      <tr><td>HIGH</td><td>always</td><td><span class="kcode">isolate_pod</span></td></tr>
+      <tr><td>CRITICAL</td><td>always</td><td><span class="kcode">evict_pod</span>, <span class="kcode">scale_deployment→0</span></td></tr>
+    </table>
+
+    <p class="implementation-note risk-note"><span>Configuration risk</span> Unrecognized actions default to HIGH. Setting <span class="kcode">AUTO_APPROVE_MEDIUM=true</span> removes the human requirement from all MEDIUM-tier actions, including <span class="kcode">block_ip</span>.</p>
+  </section>
+
+  <!-- 05 -->
+  <section id="verify">
+    <div class="sec-head"><span class="sec-num">05</span><h2>Verification &amp; bounded retry</h2></div>
+    <p class="lede">The Red Team agent independently re-derives ground truth rather than trusting the Orchestrator's claim, and retries are capped at $K$ attempts before the workflow terminates with an explicit failure/escalation verdict.</p>
+
+    <div class="formula">
+      <span class="eq-tag">EQ. 7</span>
+      $$r_t = \mathcal{R}(s_{t+1},\ a_t,\ \iota_t) \in \{\ \text{SUCCESS},\ \text{FAILED}\ \}$$
+    </div>
+
+    <div class="formula">
+      <span class="eq-tag">EQ. 8</span>
+      $$k = 1, \dots, K \qquad\quad r_t = \text{FAILED} \ \wedge\ k = K \ \Longrightarrow\ \text{END}\big(\text{FAILED\_ESCALATED}\big)$$
+    </div>
+    <div class="formula-caption">$K = $ <span class="kcode">MAX_ITERATIONS</span>, default <b>3</b>. Enforced in <span class="kcode">workflow.py</span> · <span class="kcode">router()</span>; an exhausted budget routes to <span class="kcode">END</span>.</div>
+
+    <div class="formula">
+      <span class="eq-tag">EQ. 8a</span>
+      $$
+      s_t^{(k+1)} =
+      \begin{cases}
+      \text{END}\big(\text{FAILED\_ESCALATED}\big), & r_t^{(k)} = \text{FAILED} \ \wedge\ k = K \\[6pt]
+      M\big(s_t^{(k)},\ \mathcal{O}(s_t^{(k)})\big), & r_t^{(k)} = \text{FAILED} \ \wedge\ k < K \\[6pt]
+      \text{END}, & r_t^{(k)} = \text{SUCCESS}
+      \end{cases}
+      $$
+    </div>
+    <div class="formula-caption">The full per-attempt state transition: retry re-enters $\mathcal{O}$ with the same incident context; success terminates normally, while an exhausted retry budget terminates at <span class="kcode">END</span> with <span class="kcode">FAILED_ESCALATED</span>.</div>
+
+
+  </section>
+
+
+
+  <!-- 06 : signature element -->
+  <section id="pipeline">
+    <div class="sec-head"><span class="sec-num">06</span><h2>Pipeline topology</h2></div>
+    <p class="lede">The closed-loop state transitions implemented by the multi-agent workflow.</p>
+
+    <div class="topology">
+      <div class="topology-head">
+        <span>MULTI-AGENT LLM</span>
+        <span>EXECUTED STATE GRAPH</span>
+      </div>
+
+      <div class="topology-main">
+        <div class="topology-node blue">
+          <span class="node-num">01</span>
+          <strong>BLUE TEAM</strong>
+          <em>$\mathcal{B}(\tau_t)$</em>
+          <small>detect / assess</small>
+        </div>
+
+        <div class="topology-edge">
+          <span>incident</span>
+          <b>→</b>
+        </div>
+
+        <div class="topology-node orch">
+          <span class="node-num">02</span>
+          <strong>ORCHESTRATOR</strong>
+          <em>$a_t=\mathcal{O}(\cdot)$</em>
+          <small>reason / select</small>
+        </div>
+
+        <div class="topology-edge conditional">
+          <span>HIGH / CRITICAL</span>
+          <b>→</b>
+        </div>
+
+        <div class="topology-node human">
+          <span class="node-num">03</span>
+          <strong>HUMAN GATE</strong>
+          <em>$\mathcal{H}$</em>
+          <small>approve / reject / pending</small>
+        </div>
+      </div>
+
+      <div class="topology-branches">
+        <div class="branch-line left">
+          <span class="branch-label">approved</span>
+          <b>↘</b>
+          <span>return to Orchestrator</span>
+        </div>
+        <div class="branch-line right">
+          <span class="branch-label">mitigation proceeds</span>
+          <b>↘</b>
+          <span>verification</span>
+        </div>
+      </div>
+
+      <div class="topology-verify">
+        <div class="topology-node red">
+          <span class="node-num">04</span>
+          <strong>RED TEAM</strong>
+          <em>$r_t=\mathcal{R}(\cdot)$</em>
+          <small>independent verification</small>
+        </div>
+
+        <div class="verify-routes">
+          <div class="route retry">
+            <b>FAILED</b>
+            <span>$k&lt;K$</span>
+            <i>↩</i>
+            <span>Orchestrator</span>
+          </div>
+          <div class="route terminal">
+            <b>SAFE</b>
+            <i>→</i>
+            <span>END</span>
+          </div>
+          <div class="route terminal">
+            <b>FAILED</b>
+            <span>$k=K$</span>
+            <i>→</i>
+            <span>END · <code>FAILED_ESCALATED</code></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="topology-foot">
+        <span><b>Loop:</b> Red Team failure with remaining budget re-enters the Orchestrator.</span>
+        <span><b>Termination:</b> SAFE ends normally; exhausted retry budget ends as <code>FAILED_ESCALATED</code>.</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="colophon">
+      <div>
+        <div class="label">Author</div>
+        <p><strong>Yassine Hakkache</strong></p>
+      </div>
+      <div>
+        <div class="label">Source</div>
+        <p>Formal specification for the NexusGuard multi-agent threat mitigation system. All definitions are tied to the executable implementation.</p>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>
