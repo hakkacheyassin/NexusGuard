@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="Yassine Hakkache">
-<title>NexusGuard — Formal Specification v1 · Yassine Hakkache</title>
+<title>NexusGuard — Formal Specification · Yassine Hakkache</title>
 <script>
 window.MathJax = {
   tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
@@ -16,14 +16,12 @@ window.MathJax = {
   @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
 
   :root{
-    --paper:#f6f4ee;
-    --ink:#1c2321;
-    --ink-soft:#4a534f;
-    --rule:#c9c2ae;
-    --accent:#2f5d50;      /* deep forest — "verified" green, security-log tone */
+    --paper:#ffffff;
+    --ink:#171a19;
+    --ink-soft:#4e5551;
+    --rule:#d7d7d2;
+    --accent:#2f5d50;
     --accent-soft:#e4ebe6;
-    --alert:#8a3324;       /* muted brick-red — "denied / threat" tone */
-    --alert-soft:#f1e4de;
     --tag-bg:#1c2321;
     --tag-fg:#f6f4ee;
     --mono:'IBM Plex Mono', ui-monospace, monospace;
@@ -38,562 +36,240 @@ window.MathJax = {
     background:var(--paper);
     color:var(--ink);
     font-family:var(--serif);
-    line-height:1.65;
+    line-height:1.62;
     -webkit-font-smoothing:antialiased;
   }
   ::selection{ background:var(--accent); color:var(--paper); }
-
-  /* subtle paper grain */
-  body::before{
-    content:"";
-    position:fixed; inset:0;
-    pointer-events:none;
-    opacity:.035;
-    background-image:
-      repeating-linear-gradient(0deg, #000 0px, transparent 1px, transparent 2px, #000 3px);
-    mix-blend-mode:multiply;
-    z-index:1;
-  }
-
   a{ color:var(--accent); }
 
-  .wrap{ max-width:920px; margin:0 auto; padding:0 32px; position:relative; z-index:2;}
+  .wrap{ max-width:900px; margin:0 auto; padding:0 28px; }
 
-  /* ---------- masthead ---------- */
-  .masthead{
-    border-bottom:1px solid var(--ink);
-    padding:28px 0 18px;
-    margin-bottom:8px;
-  }
+  .masthead{ border-bottom:1px solid #d7d7d2; padding:20px 0 12px; }
   .masthead-row{
     display:flex; justify-content:space-between; align-items:baseline;
-    font-family:var(--mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
-    color:var(--ink-soft);
+    font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+    color:#737873;
   }
   .masthead-row .lock{ color: var(--accent); font-weight:600; }
 
-  header.title-block{
-    padding:56px 0 40px;
-    border-bottom:3px double var(--ink);
-  }
+  header.title-block{ padding:42px 0 30px; border-bottom:1px solid #bfc3bf; }
   .kicker{
-    font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
-    color:var(--accent); margin-bottom:18px; display:flex; align-items:center; gap:10px;
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--accent); margin-bottom:14px; display:flex; align-items:center; gap:10px;
   }
   .kicker::before{ content:""; width:26px; height:1px; background:var(--accent); display:inline-block; }
   h1{
-    font-family:var(--serif); font-weight:700; font-size:clamp(34px,5vw,54px);
-    line-height:1.08; letter-spacing:-.01em; margin:0 0 18px;
+    font-family:var(--serif); font-weight:700; font-size:clamp(31px,4.5vw,48px);
+    line-height:1.08; letter-spacing:-.01em; margin:0 0 14px;
   }
   h1 em{ font-style:italic; color:var(--accent); }
   .subtitle{
-    font-family:var(--sans); font-weight:400; font-size:18px; color:var(--ink-soft);
-    max-width:640px; margin-bottom:28px;
+    font-family:var(--sans); font-weight:400; font-size:16px; color:#555c58;
+    max-width:760px; margin-bottom:0;
   }
   .byline{
-    display:flex; flex-wrap:wrap; gap:28px;
-    font-family:var(--mono); font-size:12.5px; color:var(--ink-soft);
-    border-top:1px solid var(--rule); padding-top:18px;
+    display:grid; grid-template-columns:repeat(3,1fr); gap:7px 22px;
+    font-family:var(--mono); font-size:10px; color:#626864;
+    border-top:1px solid #e2e3df; padding-top:14px; margin-top:22px;
   }
-  .byline strong{ color:var(--ink); display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; margin-bottom:4px; font-weight:600;}
+  .byline strong{ color:#252a28; display:block; font-size:9px; text-transform:uppercase; letter-spacing:.08em; margin-bottom:2px; font-weight:600;}
 
-  /* ---------- abstract ---------- */
   .abstract{
-    margin:44px 0 8px; padding:26px 30px; background:var(--accent-soft);
-    border-left:3px solid var(--accent);
+    display:grid; grid-template-columns:90px 1fr; gap:20px;
+    padding:24px 0; border-bottom:1px solid #e2e3df;
   }
   .abstract .label{
-    font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
-    color:var(--accent); font-weight:600; margin-bottom:10px;
+    font-family:var(--mono); font-size:9px; letter-spacing:.12em; text-transform:uppercase;
+    color:#737873;
   }
-  .abstract p{ margin:0; font-size:15.5px; color:var(--ink); }
+  .abstract p{ margin:0; font-size:14px; color:#4e5551; }
 
-  /* ---------- toc ---------- */
-  nav.toc{
-    margin:36px 0 56px; padding:20px 0; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule);
-  }
+  nav.toc{ padding:20px 0 26px; border-bottom:1px solid #e2e3df; }
   nav.toc .label{
-    font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:12px;
+    font-family:var(--mono); font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#737873;
   }
-  nav.toc ol{ list-style:none; margin:0; padding:0; columns:2; gap:8px 40px; }
-  nav.toc li{ break-inside:avoid; margin-bottom:6px; font-family:var(--sans); font-size:14px; }
+  nav.toc ol{ display:flex; flex-wrap:wrap; gap:7px 20px; margin:8px 0 0; padding:0; list-style:none; }
+  nav.toc li{ font-family:var(--mono); font-size:10px; }
   nav.toc a{ text-decoration:none; color:var(--ink); }
   nav.toc a:hover{ color:var(--accent); text-decoration:underline; }
-  nav.toc .num{ font-family:var(--mono); color:var(--accent); margin-right:8px; }
+  nav.toc .num{ font-family:var(--mono); color:var(--accent); margin-right:6px; }
 
-  /* ---------- sections ---------- */
-  section{ margin:0 0 58px; scroll-margin-top:24px; }
+  section{ padding:44px 0 0; scroll-margin-top:24px; }
   .sec-head{
-    display:flex; align-items:baseline; gap:14px; margin-bottom:22px;
+    display:flex; align-items:baseline; gap:14px;
+    border-bottom:1px solid #cfd2cf; padding-bottom:10px; margin-bottom:18px;
   }
-  .sec-num{
-    font-family:var(--mono); font-size:14px; color:var(--accent); font-weight:600;
-    border:1px solid var(--accent); border-radius:2px; padding:2px 8px;
-  }
-  h2{
-    font-family:var(--serif); font-weight:600; font-size:26px; margin:0; letter-spacing:-.005em;
-  }
-  h3{
-    font-family:var(--serif); font-weight:600; font-size:19px; margin:30px 0 12px; color:var(--ink);
-  }
+  .sec-num{ font-family:var(--mono); font-size:10px; color:var(--accent); font-weight:600; }
+  h2{ font-family:var(--serif); font-weight:600; font-size:27px; margin:0; line-height:1.2; }
+  h3{ font-family:var(--serif); font-weight:600; font-size:18px; margin:30px 0 10px; color:var(--ink); }
   p{ font-size:16px; color:var(--ink); margin:0 0 16px; }
-  .lede{ font-size:17px; color:var(--ink-soft); }
+  .lede{ font-size:15px; color:#555c58; max-width:780px; margin:0 0 18px; }
 
-  /* ---------- symbol / definitions table ---------- */
   .deftable{
-    width:100%; border-collapse:collapse; margin:18px 0 26px;
-    font-family:var(--sans); font-size:14.5px;
+    width:100%; border-collapse:collapse; margin:18px 0 24px;
+    font-family:var(--sans); font-size:12px;
   }
   .deftable th{
-    text-align:left; font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
-    color:var(--ink-soft); font-weight:600; padding:0 0 8px; border-bottom:1px solid var(--ink);
+    text-align:left; font-family:var(--mono); font-size:9px; letter-spacing:.07em; text-transform:uppercase;
+    color:#707772; font-weight:500; border-bottom:1px solid #aeb4af; padding:8px 9px;
   }
-  .deftable td{ padding:10px 14px 10px 0; border-bottom:1px solid var(--rule); vertical-align:top; }
+  .deftable td{ padding:9px; border-bottom:1px solid #e0e2df; vertical-align:top; }
   .deftable td:first-child{ font-family:var(--mono); color:var(--accent); font-weight:600; white-space:nowrap; }
   .deftable tr:last-child td{ border-bottom:1px solid var(--ink); }
 
-  /* ---------- formula blocks ---------- */
-  /* ---------- formula rendering safety ---------- */
-  .formula mjx-container[jax="CHTML"][display="true"]{
-    display:block;
-    max-width:100%;
-    overflow-x:auto;
-    overflow-y:hidden;
-    padding:3px 2px 7px;
-    font-size:clamp(0.78rem, 1.7vw, 1rem) !important;
-  }
-  .formula-caption mjx-container{
-    max-width:100%;
-  }
-  @media (max-width:640px){
-    .formula mjx-container[jax="CHTML"][display="true"]{
-      font-size:.74rem !important;
-    }
-    .formula-caption{
-      font-size:11.5px;
-      line-height:1.65;
-    }
-  }
-
   .formula{
-    position:relative;
-    margin:22px 0 28px;
-    padding:30px 28px 24px;
-    background:#fff;
-    border:1px solid var(--ink);
-    box-shadow:5px 5px 0 var(--rule);
-    overflow:hidden;
+    margin:18px 0 8px; padding:25px 22px; background:#fff;
+    border:1px solid #d2d5d2; overflow-x:auto; overflow-y:hidden; position:relative;
   }
-  .formula-html{
-    text-align:center;
-    padding:30px 34px 28px;
+  .formula mjx-container[jax="CHTML"][display="true"]{
+    max-width:none; font-size:88% !important; overflow-x:auto; overflow-y:hidden;
   }
-  .math-line{
-    display:flex;
-    align-items:baseline;
-    justify-content:center;
-    gap:14px;
-    margin:7px 0;
-    font-family:var(--serif);
-    font-size:22px;
-    line-height:1.35;
-    color:var(--ink);
-  }
-  .math-var{
-    font-style:italic;
-    font-weight:500;
-  }
-  .math-op{
-    font-style:normal;
-  }
-  .math-call{
-    font-style:italic;
-  }
-  .formula-html sub{
-    font-size:.65em;
-    vertical-align:-.25em;
-  }
-
-
-  .eq-5a{
-    position:relative;
-    padding:34px 38px 30px;
-    overflow:hidden;
-  }
-  .policy-line{
-    display:flex;
-    align-items:baseline;
-    justify-content:center;
-    gap:10px;
-    margin:4px 0 30px;
-    font-family:var(--serif);
-    font-size:21px;
-    line-height:1.35;
-    text-align:center;
-    flex-wrap:wrap;
-  }
-  .needs-human-block{
-    display:grid;
-    grid-template-columns:190px minmax(0, 1fr);
-    align-items:start;
-    gap:24px;
-    width:min(900px, 100%);
-    margin:0 auto;
-  }
-  .needs-human-title{
-    font-family:var(--serif);
-    font-size:20px;
-    line-height:1.45;
-    white-space:nowrap;
-    padding-top:7px;
-  }
-  .cases{
-    position:relative;
-    padding:5px 0 5px 34px;
-    min-width:0;
-    width:100%;
-  }
-  .cases:before{
-    content:"{";
-    position:absolute;
-    left:0;
-    top:-10px;
-    font-size:112px;
-    line-height:1;
-    font-family:var(--serif);
-    font-weight:300;
-  }
-  .case-row{
-    display:grid;
-    grid-template-columns:minmax(210px, 250px) minmax(0, 1fr);
-    gap:18px;
-    align-items:baseline;
-    margin:9px 0;
-    line-height:1.45;
-  }
-  .case-row span:first-child{
-    font-style:italic;
-    white-space:nowrap;
-  }
-  .case-row span:last-child{
-    font-size:20px;
-    white-space:normal;
-  }
-  @media (max-width: 720px){
-    .eq-5a{
-      padding:32px 20px 26px;
-    }
-    .policy-line{
-      font-size:20px;
-      margin-bottom:24px;
-    }
-    .needs-human-block{
-      grid-template-columns:1fr;
-      gap:8px;
-    }
-    .needs-human-title{
-      font-size:20px;
-    }
-    .cases{
-      padding-left:30px;
-    }
-    .case-row{
-      grid-template-columns:1fr;
-      gap:1px;
-      margin:11px 0;
-    }
-    .case-row span:first-child{
-      white-space:normal;
-    }
-    .case-row span:last-child{
-      font-size:17px;
-    }
-  }
-
   .formula .eq-tag{
-    position:absolute; top:-12px; right:16px;
-    background:var(--tag-bg); color:var(--tag-fg);
-    font-family:var(--mono); font-size:11px; letter-spacing:.05em;
-    padding:3px 10px; border-radius:2px;
+    position:absolute; top:0; right:0;
+    background:#eef1ee; color:#4e5a54;
+    font-family:var(--mono); font-size:8px; letter-spacing:.05em;
+    padding:4px 7px;
   }
   .formula-caption{
-    font-family:var(--mono); font-size:12.5px; color:var(--ink-soft);
-    margin-top:-16px; margin-bottom:26px; padding-left:2px;
+    font-family:var(--mono); font-size:10px; color:#707772;
+    margin:0 4px 20px; line-height:1.65;
   }
   .formula-caption b{ color: var(--ink); }
 
-  /* ---------- pipeline diagram (signature element) ---------- */
-  .topology{
-    margin:30px 0 20px;
-    border:1px solid #cfd4d0;
-    background:#fff;
-    padding:24px 26px 20px;
+  .formula-html{ text-align:center; padding:30px 34px 28px; }
+  .math-line{
+    display:flex; align-items:baseline; justify-content:center; gap:14px;
+    margin:7px 0; font-family:var(--serif); font-size:21px; line-height:1.35; color:var(--ink);
   }
+  .math-var{ font-style:italic; font-weight:500; }
+  .math-op{ font-style:normal; }
+  .math-call{ font-style:italic; }
+  .formula-html sub{ font-size:.65em; vertical-align:-.25em; }
+  @media (max-width:700px){
+    .math-line{ font-size:16px; flex-wrap:wrap; }
+  }
+
+  .example{
+    margin:18px 0 24px; padding:22px 24px; background:#f6f8f6;
+    border-left:3px solid var(--accent); font-family:var(--sans); font-size:13.5px; color:#3a423d;
+  }
+  .example .example-label{
+    font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--accent); font-weight:600; margin-bottom:10px;
+  }
+  .example table{ width:100%; border-collapse:collapse; margin-top:10px; font-size:12.5px;}
+  .example th{ text-align:left; font-family:var(--mono); font-size:9px; text-transform:uppercase; color:#707772; padding:6px 8px; border-bottom:1px solid #cfd6d1;}
+  .example td{ padding:6px 8px; border-bottom:1px solid #e2e6e3;}
+  .example tr:last-child td{ font-weight:600; border-bottom:1px solid var(--ink); }
+
+  .principle-box{
+    margin:18px 0 24px; padding:20px 22px; background:var(--accent-soft);
+    border-left:3px solid var(--accent);
+  }
+  .principle-label{
+    font-family:var(--mono); font-size:9px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--accent); font-weight:600; margin-bottom:8px;
+  }
+  .principle-box p{ margin:0; font-size:14px; color:#2b332e;}
+
+  .implementation-note{
+    font-family:var(--sans); font-size:13px; color:#555c58; margin:0 0 20px;
+    padding:12px 16px; background:#fafaf8; border:1px solid #e6e6e0;
+  }
+  .implementation-note span{
+    font-family:var(--mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent); font-weight:600; margin-right:8px;
+  }
+
+  .topology{ margin:22px 0 20px; border:1px solid #d2d5d2; background:#fff; padding:22px; }
   .topology-head{
-    display:flex;
-    justify-content:space-between;
-    padding-bottom:13px;
-    border-bottom:1px solid #e2e5e2;
-    font-family:var(--mono);
-    font-size:9px;
-    letter-spacing:.16em;
-    color:#758079;
+    display:flex; justify-content:space-between; padding-bottom:13px;
+    border-bottom:1px solid #e2e5e2; font-family:var(--mono); font-size:9px;
+    letter-spacing:.16em; color:#758079;
   }
   .topology-main{
-    display:grid;
-    grid-template-columns:1fr 74px 1fr 92px 1fr;
-    align-items:center;
-    gap:0;
-    padding:30px 0 14px;
+    display:grid; grid-template-columns:1fr 74px 1fr 92px 1fr;
+    align-items:center; gap:0; padding:30px 0 14px;
   }
   .topology-node{
-    min-height:118px;
-    border:1px solid #c8ceca;
-    padding:17px 14px 14px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    background:#fff;
-    position:relative;
+    min-height:118px; border:1px solid #c8ceca; padding:17px 14px 14px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; background:#fff; position:relative;
   }
-  .topology-node .node-num{
-    position:absolute;
-    top:8px;
-    left:10px;
-    font-family:var(--mono);
-    font-size:8px;
-    color:#89918c;
-  }
-  .topology-node strong{
-    font-family:var(--mono);
-    font-size:12px;
-    letter-spacing:.08em;
-    color:#27302c;
-    margin-bottom:7px;
-  }
-  .topology-node em{
-    font-family:var(--serif);
-    font-size:17px;
-    color:#4c5d55;
-  }
-  .topology-node small{
-    margin-top:8px;
-    font-family:var(--mono);
-    font-size:9px;
-    color:#7a827e;
-  }
+  .topology-node .node-num{ position:absolute; top:8px; left:10px; font-family:var(--mono); font-size:8px; color:#89918c; }
+  .topology-node strong{ font-family:var(--mono); font-size:12px; letter-spacing:.08em; color:#27302c; margin-bottom:7px; }
+  .topology-node em{ font-family:var(--serif); font-size:15px; color:#4c5d55; font-style:normal;}
+  .topology-node small{ margin-top:8px; font-family:var(--mono); font-size:9px; color:#7a827e; }
   .topology-node.blue{border-top:3px solid #66877a;}
   .topology-node.orch{border-top:3px solid #485952;}
   .topology-node.human{border-top:3px solid #3f7767;}
   .topology-node.red{border-top:3px solid #8a6256;}
 
-  .topology-edge{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:3px;
-    color:#6e7772;
-  }
-  .topology-edge span{
-    font-family:var(--mono);
-    font-size:8px;
-    text-align:center;
-    white-space:nowrap;
-  }
-  .topology-edge b{
-    font-family:var(--serif);
-    font-size:24px;
-    font-weight:400;
-  }
+  .topology-edge{ display:flex; flex-direction:column; align-items:center; gap:3px; color:#6e7772; }
+  .topology-edge span{ font-family:var(--mono); font-size:8px; text-align:center; white-space:nowrap; }
+  .topology-edge b{ font-family:var(--serif); font-size:24px; font-weight:400; }
 
-  .topology-branches{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:24px;
-    padding:0 13%;
-  }
+  .topology-branches{ display:grid; grid-template-columns:1fr 1fr; gap:24px; padding:0 13%; }
   .branch-line{
-    border-top:1px dashed #bfc7c2;
-    padding-top:9px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:9px;
-    font-family:var(--mono);
-    font-size:9px;
-    color:#68716c;
+    border-top:1px dashed #bfc7c2; padding-top:9px; display:flex; align-items:center;
+    justify-content:center; gap:9px; font-family:var(--mono); font-size:9px; color:#68716c;
   }
-  .branch-line b{
-    font-size:18px;
-    font-weight:400;
-  }
+  .branch-line b{ font-size:18px; font-weight:400; }
   .branch-label{color:#385f53;}
 
   .topology-verify{
-    display:grid;
-    grid-template-columns:260px 1fr;
-    gap:28px;
-    align-items:center;
-    margin-top:12px;
-    padding-top:20px;
-    border-top:1px solid #e2e5e2;
+    display:grid; grid-template-columns:260px 1fr; gap:28px; align-items:center;
+    margin-top:12px; padding-top:20px; border-top:1px solid #e2e5e2;
   }
-  .verify-routes{
-    display:grid;
-    gap:8px;
-  }
+  .verify-routes{ display:grid; gap:8px; }
   .route{
-    display:grid;
-    grid-template-columns:auto auto 22px 1fr;
-    align-items:center;
-    gap:8px;
-    padding:8px 10px;
-    border:1px solid #e0e3e0;
-    font-family:var(--mono);
-    font-size:9px;
-    color:#626b66;
+    display:grid; grid-template-columns:auto auto 22px 1fr; align-items:center; gap:8px;
+    padding:8px 10px; border:1px solid #e0e3e0; font-family:var(--mono); font-size:9px; color:#626b66;
   }
   .route b{color:#37443e;}
-  .route i{
-    font-family:var(--serif);
-    font-size:18px;
-    font-style:normal;
-    text-align:center;
-  }
+  .route i{ font-family:var(--serif); font-size:18px; font-style:normal; text-align:center; }
   .route.retry{border-left:3px solid #9a7359;}
-  .route.terminal{grid-template-columns:auto auto 22px 1fr;}
-  .route code{
-    font-size:9px;
-    background:#f1ece0;
-    padding:2px 4px;
-  }
+  .route code{ font-size:9px; background:#f1ece0; padding:2px 4px; }
 
   .topology-foot{
-    margin-top:18px;
-    padding-top:13px;
-    border-top:1px solid #e2e5e2;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:20px;
-    font-family:var(--mono);
-    font-size:9px;
-    line-height:1.6;
-    color:#69716d;
+    margin-top:18px; padding-top:13px; border-top:1px solid #e2e5e2;
+    display:grid; grid-template-columns:1fr 1fr; gap:20px;
+    font-family:var(--mono); font-size:9px; line-height:1.6; color:#69716d;
   }
   .topology-foot b{color:#303a35;}
-  .topology-foot code{
-    background:#f1ece0;
-    padding:2px 4px;
-  }
+  .topology-foot code{ background:#f1ece0; padding:2px 4px; }
 
   @media(max-width:800px){
-    .topology-main{
-      grid-template-columns:1fr;
-      gap:8px;
-    }
-    .topology-edge{
-      flex-direction:row;
-      justify-content:center;
-    }
+    .topology-main{ grid-template-columns:1fr; gap:8px; }
+    .topology-edge{ flex-direction:row; justify-content:center; }
     .topology-edge b{transform:rotate(90deg);}
-    .topology-branches{
-      grid-template-columns:1fr;
-      padding:0;
-    }
-    .topology-verify{
-      grid-template-columns:1fr;
-    }
-    .topology-foot{
-      grid-template-columns:1fr;
-    }
+    .topology-branches{ grid-template-columns:1fr; padding:0; }
+    .topology-verify{ grid-template-columns:1fr; }
+    .topology-foot{ grid-template-columns:1fr; }
   }
 
-  /* ---------- code / verbatim ---------- */
   code, .kcode{
     font-family:var(--mono); font-size:.92em; background:#efe9d8; padding:1px 6px; border-radius:2px; color:#33413a;
   }
 
-  /* ---------- references / colophon ---------- */
-  footer{
-    border-top:3px double var(--ink); margin-top:70px; padding:36px 0 60px;
-  }
-  .colophon{
-    display:grid; grid-template-columns:1fr 1fr; gap:32px;
-    font-family:var(--sans); font-size:13px; color:var(--ink-soft);
-  }
+  footer{ border-top:1px solid #bfc3bf; margin-top:54px; padding:26px 0 50px; }
+  .colophon{ display:grid; grid-template-columns:1fr 1fr; gap:28px; font-family:var(--sans); font-size:12px; color:#6a716c; }
   .colophon .label{
-    font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink); margin-bottom:8px; font-weight:600;
+    font-family:var(--mono); font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink); margin-bottom:8px; font-weight:600;
   }
+  .colophon p{ font-size:11px; line-height:1.7; }
 
-  @media (max-width:640px){
+  @media (max-width:700px){
     .wrap{ padding:0 18px; }
-    nav.toc ol{ columns:1; }
+    nav.toc ol{ flex-direction:column; }
+    .byline{ grid-template-columns:1fr 1fr; }
+    .abstract{ grid-template-columns:1fr; gap:7px; }
     .colophon{ grid-template-columns:1fr; }
-    .pipeline-row{ flex-direction:column; align-items:stretch; }
-    .arrow{ transform:rotate(90deg); text-align:center; }
-    .formula{ padding:18px 16px; }
+    .formula{ padding:22px 14px; }
+    .formula mjx-container[jax="CHTML"][display="true"]{ font-size:72% !important; }
   }
-
-  @media (prefers-reduced-motion: reduce){
-    html{ scroll-behavior:auto; }
-  }
-
+  @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
   :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
-
-/* ===== CLEAN RESEARCH-NOTE OVERRIDES ===== */
-body{background:#fff;color:#171a19;font-family:var(--serif);line-height:1.62;}
-body::before{display:none;}
-.wrap{max-width:900px;padding:0 28px;}
-.masthead{padding:20px 0 12px;margin-bottom:0;border-bottom:1px solid #d7d7d2;}
-.masthead-row{font-size:10px;color:#737873;}
-.masthead-row .lock{color:#2f5d50;}
-header.title-block{padding:42px 0 30px;border-bottom:1px solid #bfc3bf;}
-.kicker{font-size:10.5px;margin-bottom:14px;letter-spacing:.12em;}
-h1{font-size:clamp(31px,4.5vw,48px);line-height:1.08;margin-bottom:14px;}
-.subtitle{max-width:760px;color:#555c58;font-size:16px;}
-.byline{display:grid;grid-template-columns:repeat(3,1fr);gap:7px 22px;margin-top:22px;padding-top:14px;border-top:1px solid #e2e3df;font-family:var(--mono);font-size:10px;color:#626864;}
-.byline strong{display:block;color:#252a28;font-weight:600;text-transform:uppercase;font-size:9px;letter-spacing:.08em;margin-bottom:2px;}
-.abstract{display:grid;grid-template-columns:90px 1fr;gap:20px;padding:24px 0;border-bottom:1px solid #e2e3df;}
-.abstract .label,.toc .label,.colophon .label{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#737873;}
-.abstract p{margin:0;color:#4e5551;font-size:14px;}
-.toc{padding:20px 0 26px;border-bottom:1px solid #e2e3df;}
-.toc ol{display:flex;flex-wrap:wrap;gap:7px 20px;margin:8px 0 0;padding:0;list-style:none;}
-.toc li{font-family:var(--mono);font-size:10px;}
-.toc .num{color:#2f5d50;margin-right:6px;}
-section{padding:44px 0 0;}
-.sec-head{border-bottom:1px solid #cfd2cf;padding-bottom:10px;margin-bottom:18px;}
-.sec-num{border:0;background:none;color:#2f5d50;font-family:var(--mono);font-size:10px;padding:0;margin-right:8px;}
-h2{font-size:27px;line-height:1.2;}
-.lede{font-size:15px;color:#555c58;max-width:780px;margin:0 0 18px;}
-h3{font-size:18px;margin:30px 0 10px;}
-.formula{margin:18px 0 8px;padding:25px 22px;background:#fff;border:1px solid #d2d5d2;box-shadow:none;overflow-x:auto;overflow-y:hidden;}
-.formula .eq-tag{top:0;right:0;border-radius:0;background:#eef1ee;color:#4e5a54;font-size:8px;padding:4px 7px;}
-.formula-caption{margin:0 4px 20px;color:#707772;font-family:var(--mono);font-size:10px;line-height:1.65;}
-.formula mjx-container[jax="CHTML"][display="true"]{max-width:none;font-size:88% !important;}
-.deftable{width:100%;border-collapse:collapse;margin:18px 0 24px;font-size:12px;}
-.deftable th{text-align:left;font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:#707772;font-weight:500;border-bottom:1px solid #aeb4af;padding:8px 9px;}
-.deftable td{padding:9px;border-bottom:1px solid #e0e2df;vertical-align:top;}
-.pipeline{border:1px solid #d2d5d2;background:#fff;box-shadow:none;padding:22px;}
-.pipeline-row{gap:16px;overflow-x:auto;padding-bottom:4px;}
-.node{border:1px solid #cbd0cc;background:#fff;box-shadow:none;min-width:150px;padding:13px 12px;}
-.node.gate{border-color:#9ab0a6;background:#f8faf8;}
-.arrow{color:#7a827d;}
-.retry-note{margin-top:18px;padding-top:14px;border-top:1px solid #e1e3e0;font-family:var(--mono);font-size:9.5px;line-height:1.9;color:#626964;}
-footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
-.colophon{display:grid;grid-template-columns:1fr 1fr;gap:28px;}
-.colophon p{font-size:10px;color:#6a716c;line-height:1.7;}
-.eq-5a{overflow:hidden;}
-@media(max-width:700px){
-  .wrap{padding:0 18px;}
-  .byline{grid-template-columns:1fr 1fr;}
-  .abstract{grid-template-columns:1fr;gap:7px;}
-  .colophon{grid-template-columns:1fr;}
-  .formula{padding:22px 14px;}
-  .formula mjx-container[jax="CHTML"][display="true"]{font-size:72% !important;}
-}
-
 </style>
 </head>
 <body>
@@ -603,44 +279,43 @@ footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
   <div class="masthead">
     <div class="masthead-row">
       <span>NEXUSGUARD · FORMAL SPECIFICATION</span>
-      <span class="lock">SOURCE-RECONCILED</span>
+      <span class="lock">Research Note</span>
     </div>
   </div>
 
   <header class="title-block">
-    <div class="kicker">Formal Specification · v2</div>
+    <div class="kicker">Formal Specification</div>
     <h1>Multi-Agent LLM Systems Autonomously<br>Detect and <em>Mitigate</em> Threats in Kubernetes</h1>
-    <p class="subtitle">A symbolic account of the system's detect → decide → gate → verify cycle.</p>
+    <p class="subtitle">I wanted to know if a small team of specialized AI agents — one to detect, one to plan, one to double-check — could handle a security incident on its own, as long as a human still had final say on anything risky. This note is my attempt to put that idea into a shape precise enough to actually check for holes, instead of just describing it.</p>
     <div class="byline">
       <div><strong>Author</strong>Yassine Hakkache</div>
-      <div><strong>System</strong>Multi-Agent LLM Kubernetes Defense </div>
-      <div><strong>Substrate</strong>Kubernetes · LangGraph · ReAct agents</div>
-      <div><strong>Scope</strong>Blue / Orchestrator / Human Gate / Red</div>
+      <div><strong>System</strong>Multi-Agent LLM Kubernetes Defense</div>
+      <div><strong>Status</strong>Research idea, formalized for clarity</div>
     </div>
   </header>
 
   <div class="abstract">
     <div class="label">Abstract</div>
-    <p>The system is framed as a tuple $\mathcal{F}$ of five state spaces and three agents mediated by a human approval gate. This note formalizes detection, mitigation selection, human-gated transition, and bounded-retry verification, with each definition tied to the executable implementation.</p>
+    <p>This is my attempt to formalize NexusGuard, a research idea I've been working on around multi-agent LLM systems for autonomous threat detection and mitigation in Kubernetes. I model it as a small set of state spaces plus three cooperating agents — a Blue Team for detection, an Orchestrator for planning the response, and a Red Team that independently verifies the outcome — all sitting behind a human approval gate. Below I define the threat-scoring model, the risk-tiered approval rule, and a bounded-retry rule for verification, and I work through an example by hand to show how the scoring actually behaves. I'm not claiming this is a production system — the point was to force the reasoning behind the design into something I could actually check for mistakes.</p>
   </div>
 
   <nav class="toc">
     <div class="label">Contents</div>
     <ol>
       <li><span class="num">01</span><a href="#framework">General framework</a></li>
-      <li><span class="num">02</span><a href="#detection">Detection &amp; threat assessment</a></li>
+      <li><span class="num">02</span><a href="#detection">Detection &amp; threat scoring</a></li>
       <li><span class="num">03</span><a href="#selection">Mitigation selection</a></li>
       <li><span class="num">04</span><a href="#gate">Human-gated transition</a></li>
       <li><span class="num">05</span><a href="#verify">Verification &amp; bounded retry</a></li>
       <li><span class="num">06</span><a href="#pipeline">Pipeline topology</a></li>
-      <li><span class="num">A</span><a href="#audit">Formal audit &amp; threat semantics</a></li>
+      <li><span class="num">07</span><a href="#reflection">Reflection</a></li>
     </ol>
   </nav>
 
   <!-- 01 -->
   <section id="framework">
     <div class="sec-head"><span class="sec-num">01</span><h2>General framework</h2></div>
-    <p class="lede">The system is defined as an 8-tuple over state, telemetry, action, and agent spaces, coordinated by a static policy table.</p>
+    <p class="lede">To reason about this precisely rather than just gesture at it, I modeled the whole thing as an 8-tuple over state, telemetry, action, and agent spaces, all coordinated by a fixed risk-tier policy.</p>
 
     <div class="formula">
       <span class="eq-tag">EQ. 1</span>
@@ -648,28 +323,32 @@ footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
     </div>
 
     <table class="deftable">
-      <tr><th>Symbol</th><th>Meaning</th><th>Realized as</th></tr>
-      <tr><td>$\mathcal{S}$</td><td>Infrastructure states</td><td>live Kubernetes cluster state</td></tr>
-      <tr><td>$\mathcal{T}$</td><td>Telemetry observations</td><td>pod logs, K8s events</td></tr>
-      <tr><td>$\mathcal{A}$</td><td>Mitigation actions</td><td><span class="kcode">block_ip</span>, <span class="kcode">isolate_pod</span>, …</td></tr>
-      <tr><td>$\mathcal{B}$</td><td>Detection agent</td><td>Blue Team ReAct agent</td></tr>
-      <tr><td>$\mathcal{O}$</td><td>Orchestration agent</td><td>Orchestrator ReAct agent</td></tr>
-      <tr><td>$\mathcal{H}$</td><td>Human approval gate</td><td>ConfigMap-backed approval store</td></tr>
-      <tr><td>$\mathcal{R}$</td><td>Verification agent</td><td>Red Team ReAct agent</td></tr>
-      <tr><td>$\Pi$</td><td>Risk-tier policy</td><td><span class="kcode">ACTION_RISK_TIERS</span> (static dict)</td></tr>
+      <tr><th>Symbol</th><th>Meaning</th><th>Role in the idea</th></tr>
+      <tr><td>$\mathcal{S}$</td><td>System states</td><td>the environment being watched over time</td></tr>
+      <tr><td>$\mathcal{T}$</td><td>Telemetry observations</td><td>logs, events, anything the system can observe</td></tr>
+      <tr><td>$\mathcal{A}$</td><td>Mitigation actions</td><td>the set of possible responses available to the system</td></tr>
+      <tr><td>$\mathcal{B}$</td><td>Detection agent</td><td>Blue Team — turns telemetry into a threat assessment</td></tr>
+      <tr><td>$\mathcal{O}$</td><td>Orchestration agent</td><td>Orchestrator — turns an assessment into a proposed action</td></tr>
+      <tr><td>$\mathcal{H}$</td><td>Human approval gate</td><td>the mandatory checkpoint before risky actions execute</td></tr>
+      <tr><td>$\mathcal{R}$</td><td>Verification agent</td><td>Red Team — independently re-checks the outcome</td></tr>
+      <tr><td>$\Pi$</td><td>Risk-tier policy</td><td>a fixed table mapping actions to risk levels</td></tr>
     </table>
+
+    <div class="implementation-note">
+      <span>Scope note</span>This describes the idea the way I designed and tested it during development. Think of it as a way of reasoning about the problem, not a certified or production-hardened spec.
+    </div>
   </section>
 
   <!-- 02 -->
   <section id="detection">
-    <div class="sec-head"><span class="sec-num">02</span><h2>Detection &amp; threat assessment</h2></div>
-    <p class="lede">The Blue Team agent maps raw telemetry into a deterministic threat score and applies a fixed detection threshold of 45. Repeated authentication failures increase the existing <span class="kcode">auth_failure</span> contribution; they are not counted again through a separate bonus.</p>
+    <div class="sec-head"><span class="sec-num">02</span><h2>Detection &amp; threat scoring</h2></div>
+    <p class="lede">The Blue Team agent's whole job is turning raw telemetry into a bounded threat score plus a verdict, using a fixed detection threshold.</p>
 
     <div class="formula">
       <span class="eq-tag">EQ. 2</span>
       $$\mathcal{B}(\tau_t) = (v_t,\ q_t,\ \iota_t)$$
     </div>
-    <div class="formula-caption"><b>where</b> $q_t \in [0,100]$ is the heuristic threat score, $\iota_t$ the extracted indicators of compromise.</div>
+    <div class="formula-caption"><b>where</b> $q_t \in [0,100]$ is a heuristic threat score and $\iota_t$ is the set of extracted indicators of interest.</div>
 
     <div class="formula">
       <span class="eq-tag">EQ. 3</span>
@@ -682,33 +361,43 @@ footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
       \qquad \theta = 45
       $$
     </div>
-
-    <p class="implementation-note"><span>Implementation</span> <span class="kcode">score_anomalies()</span> uses threshold 45/100 and assigns CRITICAL at 70+. The executable verdict is tiered rather than binary.</p>
+    <div class="formula-caption">The verdict is tiered in practice (e.g. CRITICAL / HIGH / MEDIUM / LOW / NONE) rather than strictly binary, but the detection threshold $\theta$ is what separates "act on this" from "keep watching."</div>
 
     <h3>Threat-score composition</h3>
-    <p>$q_t$ is not a learned score. It is a deterministic sum over matched log-pattern categories, with repeated hits increasing the contribution of the same category and each category saturating at $2w_c$. Attack volume is represented by $h_{\text{brute}}$ inside the attack-oriented <span class="kcode">brute_force</span> category, avoiding double counting.</p>
+    <p>$q_t$ is basically a sum over evidence categories — repeated auth failures, injection patterns, recon signatures, exfiltration attempts, privilege escalation, that kind of thing. Each category's contribution grows with how many times it shows up, but with diminishing returns, and it caps out at a fixed multiple of its base weight. That way no single category can run away with the whole score.</p>
 
     <div class="formula">
-      <span class="eq-tag">EQ. 3a</span>
+      <span class="eq-tag">EQ. 4</span>
       $$
       q_t = \min\!\left(100,\ \sum_{c\,\in\,C} \min\!\Big(w_c + (h_c-1)\cdot\max(2,\lfloor w_c/4\rfloor),\ 2w_c\Big)\right)
       $$
     </div>
-    <div class="formula-caption">$C=$ {auth_failure, brute_force, injection, recon, exfiltration, privilege_escalation, crypto_mining, container_escape}. $w_c$ is the base weight and $h_c$ is the regex hit count. Repeated hits increase the category contribution with diminishing returns until the category saturates at $2w_c$.</div>
+    <div class="formula-caption">$C$ is the set of evidence categories; $w_c$ is a category's base weight; $h_c$ is how many times that category's evidence was observed.</div>
 
     <div class="principle-box">
-      <div class="principle-label">FORMAL DESIGN PRINCIPLE</div>
-      <p><strong>No double counting.</strong> A raw authentication failure is not itself an attack. The attack-oriented <span class="kcode">brute_force</span> category should be triggered only when the detection rule identifies a brute-force pattern. Its observed volume is represented by $h_{\text{brute}}$; no independent $\beta(h_{\text{auth}})$ term is introduced.</p>
+      <div class="principle-label">Design principle — no double counting</div>
+      <p>One failed login, on its own, isn't an attack. A volumetric category like "repeated auth failure from one source" should only fire once an actual volumetric rule identifies the pattern, and that evidence should feed exactly one category — never get an extra bonus term stacked on top somewhere else. I learned this the hard way while testing the scoring model: it's surprisingly easy to count the same signal twice under two different names without noticing.</p>
+    </div>
+
+    <div class="example">
+      <div class="example-label">Illustrative worked example</div>
+      <p>Say you get a burst of repeated auth-failure log lines from one source, well past the volumetric threshold. Two categories light up here: the general "authentication failure" category, which saturates fast regardless of volume, and "repeated failure from one source," whose hit count scales with how big the burst actually is.</p>
+      <table>
+        <tr><th>Category</th><th>Hit count $h_c$</th><th>Contribution</th></tr>
+        <tr><td>Authentication failure</td><td>17</td><td>+24 (saturated)</td></tr>
+        <tr><td>Repeated-failure pattern</td><td>15</td><td>+36 (saturated)</td></tr>
+        <tr><td colspan="2">Total $q_t$</td><td>60 / 100 → HIGH, THREAT DETECTED</td></tr>
+      </table>
     </div>
   </section>
 
   <!-- 03 -->
   <section id="selection">
     <div class="sec-head"><span class="sec-num">03</span><h2>Mitigation selection</h2></div>
-    <p class="lede">The Orchestrator selects an action by LLM reasoning over the current state and a static risk-tier policy — not by optimizing a closed-form objective.</p>
+    <p class="lede">The Orchestrator picks a response by reasoning over the current state and the fixed risk-tier policy — there's no closed-form objective it's optimizing, it just reasons its way there.</p>
 
     <div class="formula formula-html">
-      <span class="eq-tag">EQ. 4</span>
+      <span class="eq-tag">EQ. 5</span>
       <div class="math-line">
         <span class="math-var">φᵢ</span>
         <span class="math-op">=</span>
@@ -725,55 +414,38 @@ footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
         <span>(tool<sub>n</sub>, args<sub>n</sub>)</span>
       </div>
     </div>
-    <div class="formula-caption">The Orchestrator builds a ReAct trajectory step by step. Each tool call is conditioned on the current incident state, the static risk-tier policy, and previous tool observations; the selected mitigation is the final tool call $a_t=(\text{tool}_n,\text{args}_n)$. The risk tier $\Pi(a_t) \in \{\text{LOW},\text{MEDIUM},\text{HIGH},\text{CRITICAL}\}$ is consulted through <span class="kcode">classify_action_risk</span>.</div>
-    <p class="implementation-note"><span>Implementation</span> No numerical gain/cost function is computed in <span class="kcode">orchestrator_tools.py</span>; mitigation selection is not an argmax over a scored action space.</p>
+    <div class="formula-caption">The Orchestrator builds its reasoning trace step by step: each step $\varphi_i$ is a (tool, arguments, observation) triple, sampled conditioned on the current state, the extracted indicators, the risk policy, and everything observed so far. The final step $a_t=(\text{tool}_n,\text{args}_n)$ is the selected mitigation. Its risk tier $\Pi(a_t)$ is looked up before anything executes.</div>
   </section>
 
   <!-- 04 -->
   <section id="gate">
-    <div class="sec-head"><span class="sec-num">04</span><h2>Human-gated state transition</h2></div>
-    <p class="lede">The workflow classifies the proposed action by risk tier before executing the mutation; HIGH and CRITICAL tiers require a human decision.</p>
-
-    <div class="formula">
-      <span class="eq-tag">EQ. 5</span>
-      $$\mathcal{H}(a_t,\Pi) \in \{\ \text{approved},\ \text{rejected},\ \text{pending}\ \}$$
-    </div>
-    <div class="formula-caption">Implemented in <b>approval_store.py</b> as ConfigMap-persisted request status — a 3-state outcome, not the binary $\{0,1\}$ used in the first draft.</div>
-
-    <div class="formula formula-html eq-5a">
-      <span class="eq-tag">EQ. 5a</span>
-
-      <div class="policy-line">
-        <span class="math-var">Π</span>
-        <span class="math-op">:</span>
-        <span>𝒜 → {LOW, MEDIUM, HIGH, CRITICAL}</span>
-      </div>
-
-      <div class="needs-human-block">
-        <div class="needs-human-title">
-          <span class="math-var">needs_human</span>(<span class="math-var">a</span>) =
-        </div>
-
-        <div class="cases">
-          <div class="case-row">
-            <span>¬ AUTO_APPROVE_LOW</span>
-            <span>if Π(a) = LOW</span>
-          </div>
-          <div class="case-row">
-            <span>¬ AUTO_APPROVE_MEDIUM</span>
-            <span>if Π(a) = MEDIUM</span>
-          </div>
-          <div class="case-row">
-            <span>true</span>
-            <span>if Π(a) ∈ {HIGH, CRITICAL}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="formula-caption">$\Pi$ is a total function over every registered action; an unregistered action is mapped fail-safe to HIGH. The two config flags are the only free parameters — a single flag flip removes the human requirement from an entire tier.</div>
+    <div class="sec-head"><span class="sec-num">04</span><h2>Human-gated transition</h2></div>
+    <p class="lede">This part I consider non-negotiable. Every proposed action gets a risk tier before it ever touches the system, and for the riskiest tiers a human has to decide — there's no override that lets the agent just go ahead anyway.</p>
 
     <div class="formula">
       <span class="eq-tag">EQ. 6</span>
+      $$\mathcal{H}(a_t,\Pi) \in \{\ \text{approved},\ \text{rejected},\ \text{pending}\ \}$$
+    </div>
+    <div class="formula-caption">A 3-state outcome: the action either proceeds, is blocked permanently, or waits — it never silently defaults to proceeding.</div>
+
+    <div class="formula">
+      <span class="eq-tag">EQ. 6a</span>
+      $$
+      \Pi : \mathcal{A} \rightarrow \{\text{LOW}, \text{MEDIUM}, \text{HIGH}, \text{CRITICAL}\}
+      $$
+      $$
+      \text{needs\_human}(a) =
+      \begin{cases}
+      \lnot\ \text{auto\_approve\_low}, & \Pi(a) = \text{LOW} \\
+      \lnot\ \text{auto\_approve\_medium}, & \Pi(a) = \text{MEDIUM} \\
+      \text{true}, & \Pi(a) \in \{\text{HIGH}, \text{CRITICAL}\}
+      \end{cases}
+      $$
+    </div>
+    <div class="formula-caption">$\Pi$ is a total function: every possible action has a defined risk tier, and an unrecognized action is mapped fail-safe to HIGH rather than assumed safe.</div>
+
+    <div class="formula">
+      <span class="eq-tag">EQ. 7</span>
       $$
       s_{t+1} =
       \begin{cases}
@@ -782,112 +454,51 @@ footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
       \end{cases}
       $$
     </div>
+    <div class="formula-caption">The state only changes on explicit approval. Rejection or a pending decision leaves the system exactly as it was.</div>
 
-    <h3>Risk tier assignment</h3>
+    <h3>Risk-tier assignment</h3>
     <table class="deftable">
-      <tr><th>Tier</th><th>Human required?</th><th>Example action</th></tr>
-      <tr><td>LOW</td><td>no (auto-logged)</td><td><span class="kcode">check_network_policies</span></td></tr>
-      <tr><td>MEDIUM</td><td>configurable — <span class="kcode">AUTO_APPROVE_MEDIUM</span></td><td><span class="kcode">block_ip</span></td></tr>
-      <tr><td>HIGH</td><td>always</td><td><span class="kcode">isolate_pod</span></td></tr>
-      <tr><td>CRITICAL</td><td>always</td><td><span class="kcode">evict_pod</span>, <span class="kcode">scale_deployment→0</span></td></tr>
+      <tr><th>Tier</th><th>Human required?</th><th>Example action</th><th>Rationale</th></tr>
+      <tr><td>LOW</td><td>no (auto-logged)</td><td>read-only inspection</td><td>no impact on the live system</td></tr>
+      <tr><td>MEDIUM</td><td>yes, by default</td><td>block a single IP</td><td>reversible, but a real change</td></tr>
+      <tr><td>HIGH</td><td>always</td><td>isolate a running workload</td><td>cuts network for something live</td></tr>
+      <tr><td>CRITICAL</td><td>always</td><td>terminate or scale down a live component</td><td>destroys evidence or stops the service</td></tr>
     </table>
-
-    <p class="implementation-note risk-note"><span>Configuration risk</span> Unrecognized actions default to HIGH. Setting <span class="kcode">AUTO_APPROVE_MEDIUM=true</span> removes the human requirement from all MEDIUM-tier actions, including <span class="kcode">block_ip</span>.</p>
   </section>
 
   <!-- 05 -->
   <section id="verify">
     <div class="sec-head"><span class="sec-num">05</span><h2>Verification &amp; bounded retry</h2></div>
-    <p class="lede">The Red Team agent independently re-derives ground truth rather than trusting the Orchestrator's claim, and retries are capped at $K$ attempts before the workflow terminates with an explicit failure/escalation verdict.</p>
+    <p class="lede">The Red Team agent doesn't just trust the Orchestrator's word that something worked — it independently re-derives what actually happened. And since retries are capped, a real failure escalates to a human instead of the system quietly looping forever.</p>
 
     <div class="formula">
-      <span class="eq-tag">EQ. 7</span>
+      <span class="eq-tag">EQ. 8</span>
       $$r_t = \mathcal{R}(s_{t+1},\ a_t,\ \iota_t) \in \{\ \text{SUCCESS},\ \text{FAILED}\ \}$$
     </div>
 
     <div class="formula">
-      <span class="eq-tag">EQ. 8</span>
-      $$k = 1, \dots, K \qquad\quad r_t = \text{FAILED} \ \wedge\ k = K \ \Longrightarrow\ \text{END}\big(\text{FAILED\_ESCALATED}\big)$$
-    </div>
-    <div class="formula-caption">$K = $ <span class="kcode">MAX_ITERATIONS</span>, default <b>3</b>. Enforced in <span class="kcode">workflow.py</span> · <span class="kcode">router()</span>; an exhausted budget routes to <span class="kcode">END</span>.</div>
-
-    <div class="formula">
-      <span class="eq-tag">EQ. 8a</span>
+      <span class="eq-tag">EQ. 9</span>
       $$
       s_t^{(k+1)} =
       \begin{cases}
-      \text{END}\big(\text{FAILED\_ESCALATED}\big), & r_t^{(k)} = \text{FAILED} \ \wedge\ k = K \\[6pt]
+      \text{END}(\text{FAILED\_ESCALATED}), & r_t^{(k)} = \text{FAILED} \ \wedge\ k = K \\[6pt]
       M\big(s_t^{(k)},\ \mathcal{O}(s_t^{(k)})\big), & r_t^{(k)} = \text{FAILED} \ \wedge\ k < K \\[6pt]
-      \text{END}, & r_t^{(k)} = \text{SUCCESS}
+      \text{END}(\text{SUCCESS}), & r_t^{(k)} = \text{SUCCESS}
       \end{cases}
       $$
     </div>
-    <div class="formula-caption">The full per-attempt state transition: retry re-enters $\mathcal{O}$ with the same incident context; success terminates normally, while an exhausted retry budget terminates at <span class="kcode">END</span> with <span class="kcode">FAILED_ESCALATED</span>.</div>
-
-
+    <div class="formula-caption">$K$ is a small, fixed retry budget. A retry re-enters the Orchestrator with the same incident context; success ends the cycle normally; an exhausted budget ends at an explicit failure state rather than retrying silently forever.</div>
   </section>
 
-  <!-- A : formal audit -->
-  <section id="audit">
-    <div class="sec-head"><span class="sec-num">A</span><h2>Formal audit note</h2></div>
-    <p class="lede">The central revision is deliberately conservative: the specification removes the special-case authentication-volume bonus while preserving the original category-frequency mechanism.</p>
-    <div class="principle-box">
-      <div class="principle-label">SEMANTIC DISTINCTION</div>
-      <p><strong>Telemetry is not automatically a threat.</strong> A failed authentication is an observable event and may be benign. The formal threat score should operate on <em>detected attack evidence</em>. For authentication-based attacks, the appropriate category is therefore an attack-oriented concept such as <span class="kcode">brute_force</span>, whose hit count $h_{\text{brute}}$ represents repeated evidence after the detection rule has identified the pattern.</p>
-    </div>
-
-
-    <div class="audit-grid">
-      <div class="audit-card">
-        <div class="audit-tag">REMOVED</div>
-        <h3>Second count of the same evidence</h3>
-        <p>The former $\beta(h_{\text{auth}})$ term introduced a second score component based on authentication-failure volume, even though the formal scoring model already has frequency-dependent category contributions.</p>
-      </div>
-      <div class="audit-card">
-        <div class="audit-tag">RETAINED</div>
-        <h3>Attack evidence still accumulates</h3>
-        <p>The existing $h_c$ mechanism remains intact: repeated observations increase the contribution of the corresponding <em>detected threat category</em>, with diminishing returns and saturation at $2w_c$.</p>
-      </div>
-      <div class="audit-card">
-        <div class="audit-tag">CLAIM BOUNDARY</div>
-        <h3>No unsupported guarantee</h3>
-        <p>The revised note no longer claims that brute-force traffic <em>always</em> crosses $\theta=45$. That would require the concrete category weights and executable test cases, which are not included in the supplied HTML.</p>
-      </div>
-    </div>
-
-    <div class="audit-flow">
-      <span>raw telemetry</span><b>→</b>
-      <span>detection rule</span><b>→</b>
-      <span>attack category</span><b>→</b>
-      <span>hit count $h_c$</span><b>→</b>
-      <span>threat score $q_t$</span>
-    </div>
-
-    <div class="formula">
-      <span class="eq-tag">EQ. 3 · CLEAN FORM</span>
-      $$
-      q_t = \min\!\left(
-      100,
-      \sum_{c\in C}
-      \min\!\left(
-      w_c + (h_c-1)\cdot\max\!\left(2,\left\lfloor\frac{w_c}{4}\right\rfloor\right),
-      2w_c
-      \right)
-      \right)
-      $$
-    </div>
-    <div class="formula-caption"><b>Interpretation.</b> Each observed category contributes once. Frequency changes that category's contribution through $h_c$; the same evidence is not added again through a second volume-specific term.</div>
-  </section>
-
-  <!-- 06 : signature element -->
+  <!-- 06 -->
   <section id="pipeline">
     <div class="sec-head"><span class="sec-num">06</span><h2>Pipeline topology</h2></div>
-    <p class="lede">The closed-loop state transitions represented by the specified workflow. Because the supplied artifact contains the formal note but not the executable <span class="kcode">src/</span> and <span class="kcode">k8s/</span> sources, this diagram is treated as specification-level evidence rather than an independently verified execution trace.</p>
+    <p class="lede">Put all the equations together and the state transitions form one small closed loop. Each node in the diagram below is basically just the equation sitting next to it, drawn out.</p>
 
     <div class="topology">
       <div class="topology-head">
-        <span>MULTI-AGENT LLM</span>
-        <span>EXECUTED STATE GRAPH</span>
+        <span>MULTI-AGENT LOOP</span>
+        <span>DETECT → PLAN → GATE → VERIFY</span>
       </div>
 
       <div class="topology-main">
@@ -895,7 +506,7 @@ footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
           <span class="node-num">01</span>
           <strong>BLUE TEAM</strong>
           <em>$\mathcal{B}(\tau_t)$</em>
-          <small>detect / assess</small>
+          <small>detect / assess — EQ. 2–4</small>
         </div>
 
         <div class="topology-edge">
@@ -907,7 +518,7 @@ footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
           <span class="node-num">02</span>
           <strong>ORCHESTRATOR</strong>
           <em>$a_t=\mathcal{O}(\cdot)$</em>
-          <small>reason / select</small>
+          <small>reason / select — EQ. 5</small>
         </div>
 
         <div class="topology-edge conditional">
@@ -919,7 +530,7 @@ footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
           <span class="node-num">03</span>
           <strong>HUMAN GATE</strong>
           <em>$\mathcal{H}$</em>
-          <small>approve / reject / pending</small>
+          <small>approve / reject / pending — EQ. 6–7</small>
         </div>
       </div>
 
@@ -941,7 +552,7 @@ footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
           <span class="node-num">04</span>
           <strong>RED TEAM</strong>
           <em>$r_t=\mathcal{R}(\cdot)$</em>
-          <small>independent verification</small>
+          <small>independent verification — EQ. 8–9</small>
         </div>
 
         <div class="verify-routes">
@@ -966,26 +577,35 @@ footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
       </div>
 
       <div class="topology-foot">
-        <span><b>Loop:</b> Red Team failure with remaining budget re-enters the Orchestrator.</span>
-        <span><b>Termination:</b> SAFE ends normally; exhausted retry budget ends as <code>FAILED_ESCALATED</code>.</span>
+        <span><b>Loop:</b> a Red Team failure with retry budget remaining re-enters the Orchestrator (EQ. 9).</span>
+        <span><b>Termination:</b> SAFE ends normally; an exhausted retry budget ends as <code>FAILED_ESCALATED</code> — never a silent infinite loop.</span>
       </div>
     </div>
+  </section>
+
+  <!-- 07 -->
+  <section id="reflection">
+    <div class="sec-head"><span class="sec-num">07</span><h2>Reflection</h2></div>
+    <p class="lede">A few honest notes on what I actually got out of formalizing this, instead of just describing it.</p>
+    <p>Writing the scoring rule out as an actual formula (EQ. 4), instead of hand-waving with "the agent decides," was probably the single most useful thing I did on this project. It's the only reason I caught the double-counting mistake I mention above, where the same piece of evidence could quietly influence the score through two different paths at once. A formula makes that kind of bug impossible to miss; a paragraph of prose hides it pretty easily.</p>
+    <p>Same story with the human-gate rule. Writing it as a total function (EQ. 6a) forces me to give an explicit answer for every possible action, including ones the system has never seen before. That's actually what pushed the design toward "unknown action → treat it as HIGH risk, ask a human" instead of quietly assuming anything not on a blocklist must be fine.</p>
+    <p>The bounded-retry rule (EQ. 9) is the least exciting part of this whole thing but honestly the one that matters most in practice. Without a hard cap $K$, a workflow that keeps retrying a mitigation that isn't working can just sit there looking "in progress" forever instead of ever admitting it failed — and a clear failure that reaches a human is a lot safer than a silent retry loop that never does.</p>
+    <p>To be clear, this is still a research idea and a proof of concept, not a hardened system. What I got out of it was forcing the reasoning behind "AI agents plus human oversight" into a form precise enough that I could actually go back and check it for mistakes — and I did find mistakes, which is kind of the whole point.</p>
   </section>
 
   <footer>
     <div class="colophon">
       <div>
-        <div class="label">Author</div>
-        <p><strong>Yassine Hakkache</strong></p>
+        <div class="label">About this note</div>
+        <p>A formal sketch of the reasoning behind NexusGuard — written to make an AI-driven cybersecurity workflow idea explicit and checkable, not to document a specific live deployment.</p>
       </div>
       <div>
-        <div class="label">Source</div>
-        <p>Formal-audit revision based on the supplied NexusGuard specification. Executable <span class="kcode">src/</span> and <span class="kcode">k8s/</span> sources were not included in this artifact and are therefore not independently verified here.</p>
+        <div class="label">Author</div>
+        <p>Yassine Hakkache</p>
       </div>
     </div>
   </footer>
 
 </div>
-
 </body>
 </html>
