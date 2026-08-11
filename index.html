@@ -181,6 +181,51 @@ window.MathJax = {
     color:var(--accent); font-weight:600; margin-right:8px;
   }
 
+
+  .policy-params{
+    margin:24px 0 28px;
+    border:1px solid #cfd5d1;
+    background:#fff;
+  }
+  .policy-params-head{
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    padding:11px 14px;
+    border-bottom:1px solid #dfe3df;
+    background:#f7f8f6;
+    font-family:var(--mono);
+    font-size:9px;
+    letter-spacing:.1em;
+    color:#68716c;
+  }
+  .policy-params-head span:first-child{
+    color:var(--accent);
+    font-weight:600;
+  }
+  .policy-lead{
+    padding:18px 18px 4px;
+    margin:0;
+    font-family:var(--sans);
+    font-size:13.5px;
+    color:#3e4742;
+  }
+  .policy-table{
+    margin:12px 0 8px;
+  }
+  .policy-table td:nth-child(2){
+    font-family:var(--mono);
+    color:var(--accent);
+    font-weight:600;
+  }
+  .policy-note{
+    margin:16px 18px;
+  }
+  .policy-example{
+    margin:16px 18px 20px;
+    background:#fafaf8;
+  }
+
   .topology{ margin:22px 0 20px; border:1px solid #d2d5d2; background:#fff; padding:22px; }
   .topology-head{
     display:flex; justify-content:space-between; padding-bottom:13px;
@@ -365,7 +410,7 @@ window.MathJax = {
       \qquad \theta = 45
       $$
     </div>
-    <div class="formula-caption">The verdict is tiered in practice (e.g. CRITICAL / HIGH / MEDIUM / LOW / NONE) rather than strictly binary, but the detection threshold $\theta$ is what separates "act on this" from "keep watching."</div>
+    <div class="formula-caption">The verdict is tiered in practice (e.g. CRITICAL / HIGH / MEDIUM / LOW / NONE) rather than strictly binary. The threshold $\theta=45$ is a current policy parameter: it defines the present decision boundary but is not claimed to be a universal constant.</div>
 
     <h3>Threat-score composition</h3>
     <p>$q_t$ is basically a sum over evidence categories — repeated auth failures, injection patterns, recon signatures, exfiltration attempts, privilege escalation, that kind of thing. Each category's contribution grows with how many times it shows up, but with diminishing returns, and it caps out at a fixed multiple of its base weight. That way no single category can run away with the whole score.</p>
@@ -377,6 +422,61 @@ window.MathJax = {
       $$
     </div>
     <div class="formula-caption">$C$ is the set of evidence categories; $w_c$ is a category's base weight; $h_c$ is how many times that category's evidence was observed.</div>
+
+    <div class="policy-params">
+      <div class="policy-params-head">
+        <span>POLICY PARAMETERS</span>
+        <span>CONFIGURABLE · CALIBRATABLE</span>
+      </div>
+      <p class="policy-lead">
+        The numerical values used by the scoring rule are <strong>policy parameters</strong>, not universal mathematical constants.
+        The equation defines <em>how</em> the parameters affect the score; the security policy defines their current values.
+        They can therefore be changed and empirically calibrated without changing the mathematical structure of EQ. 4.
+      </p>
+
+      <table class="deftable policy-table">
+        <tr><th>Parameter</th><th>Current value</th><th>Meaning</th><th>Why it is configurable</th></tr>
+        <tr>
+          <td>$w_c$</td>
+          <td>category-dependent</td>
+          <td>base weight assigned to evidence category $c$</td>
+          <td>different evidence categories can carry different evidentiary strength</td>
+        </tr>
+        <tr>
+          <td>$\theta$</td>
+          <td>45</td>
+          <td>detection threshold in EQ. 3</td>
+          <td>can be calibrated against false-positive and false-negative behavior</td>
+        </tr>
+        <tr>
+          <td>$K$</td>
+          <td>fixed retry budget</td>
+          <td>maximum number of verification retries in EQ. 9</td>
+          <td>can be tuned to balance recovery attempts against bounded execution</td>
+        </tr>
+      </table>
+
+      <div class="principle-box policy-note">
+        <div class="principle-label">Interpretation</div>
+        <p>
+          A value such as $w_c=12$ does <strong>not</strong> claim that 12 is an objectively correct or universal
+          security value. It means that, under the current policy, this category starts with a base contribution of 12.
+          What matters first is the <strong>relative ordering and rationale</strong> of category weights
+          (for example, stronger evidence may receive a larger $w_c$). The exact numerical values are hypotheses
+          to be validated and calibrated experimentally.
+        </p>
+      </div>
+
+      <div class="example policy-example">
+        <div class="example-label">Parameter interpretation</div>
+        <p>
+          A value such as <strong>$w_c=12$</strong> represents the current policy value assigned to that category.
+          The scoring structure remains unchanged if this value is modified. Numerical policy values are therefore
+          configurable and can be calibrated against representative benign and attack scenarios.
+        </p>
+      </div>
+    </div>
+
 
     <div class="principle-box">
       <div class="principle-label">Design principle — no double counting</div>
@@ -613,7 +713,8 @@ window.MathJax = {
   <section id="reflection">
     <div class="sec-head"><span class="sec-num">08</span><h2>Reflection</h2></div>
     <p class="lede">A few honest notes on what I actually got out of formalizing this, instead of just describing it.</p>
-    <p>Writing the scoring rule out as an actual formula (EQ. 4), instead of hand-waving with "the agent decides," was probably the single most useful thing I did on this project. It's the only reason I caught the double-counting mistake I mention above, where the same piece of evidence could quietly influence the score through two different paths at once. A formula makes that kind of bug impossible to miss; a paragraph of prose hides it pretty easily.</p>
+    <p>The numerical values in the scoring policy should be treated as configurable hypotheses rather than immutable truths. The current weights and threshold define one policy instance; a stronger empirical study would sweep or calibrate these parameters on representative benign and attack scenarios and report the resulting false-positive / false-negative trade-off.</p>
+      <p>Writing the scoring rule out as an actual formula (EQ. 4), instead of hand-waving with "the agent decides," was probably the single most useful thing I did on this project. It's the only reason I caught the double-counting mistake I mention above, where the same piece of evidence could quietly influence the score through two different paths at once. A formula makes that kind of bug impossible to miss; a paragraph of prose hides it pretty easily.</p>
     <p>Same story with the human-gate rule. Writing it as a total function (EQ. 6a) forces me to give an explicit answer for every possible action, including ones the system has never seen before. That's actually what pushed the design toward "unknown action → treat it as HIGH risk, ask a human" instead of quietly assuming anything not on a blocklist must be fine.</p>
     <p>The bounded-retry rule (EQ. 9) is the least exciting part of this whole thing but honestly the one that matters most in practice. Without a hard cap $K$, a workflow that keeps retrying a mitigation that isn't working can just sit there looking "in progress" forever instead of ever admitting it failed — and a clear failure that reaches a human is a lot safer than a silent retry loop that never does.</p>
     <p>To be clear, this is still a research idea and a proof of concept, not a hardened system. What I got out of it was forcing the reasoning behind "AI agents plus human oversight" into a form precise enough that I could actually go back and check it for mistakes — and I did find mistakes, which is kind of the whole point.</p>
