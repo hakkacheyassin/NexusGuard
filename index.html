@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="Yassine Hakkache">
-<title>NexusGuard — Formal Specification v2 · Yassine Hakkache</title>
+<title>NexusGuard — Formal Specification v1 · Yassine Hakkache</title>
 <script>
 window.MathJax = {
   tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
@@ -613,10 +613,9 @@ footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
     <p class="subtitle">A symbolic account of the system's detect → decide → gate → verify cycle.</p>
     <div class="byline">
       <div><strong>Author</strong>Yassine Hakkache</div>
-      <div><strong>System</strong>Multi-Agent LLM Kubernetes Defense (POC)</div>
+      <div><strong>System</strong>Multi-Agent LLM Kubernetes Defense </div>
       <div><strong>Substrate</strong>Kubernetes · LangGraph · ReAct agents</div>
       <div><strong>Scope</strong>Blue / Orchestrator / Human Gate / Red</div>
-      <div><strong>Status</strong>Source-reconciled · implementation-verified</div>
     </div>
   </header>
 
@@ -634,7 +633,7 @@ footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
       <li><span class="num">04</span><a href="#gate">Human-gated transition</a></li>
       <li><span class="num">05</span><a href="#verify">Verification &amp; bounded retry</a></li>
       <li><span class="num">06</span><a href="#pipeline">Pipeline topology</a></li>
-
+      <li><span class="num">A</span><a href="#audit">Formal audit &amp; threat semantics</a></li>
     </ol>
   </nav>
 
@@ -664,7 +663,7 @@ footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
   <!-- 02 -->
   <section id="detection">
     <div class="sec-head"><span class="sec-num">02</span><h2>Detection &amp; threat assessment</h2></div>
-    <p class="lede">The Blue Team agent maps raw telemetry into a deterministic threat score and applies a fixed detection threshold of 45.</p>
+    <p class="lede">The Blue Team agent maps raw telemetry into a deterministic threat score and applies a fixed detection threshold of 45. Repeated authentication failures increase the existing <span class="kcode">auth_failure</span> contribution; they are not counted again through a separate bonus.</p>
 
     <div class="formula">
       <span class="eq-tag">EQ. 2</span>
@@ -687,7 +686,7 @@ footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
     <p class="implementation-note"><span>Implementation</span> <span class="kcode">score_anomalies()</span> uses threshold 45/100 and assigns CRITICAL at 70+. The executable verdict is tiered rather than binary.</p>
 
     <h3>Threat-score composition</h3>
-    <p>$q_t$ is a deterministic sum over matched log-pattern categories, with repeated hits increasing the contribution of the same category and each category saturating at $2w_c$.</p>
+    <p>$q_t$ is not a learned score. It is a deterministic sum over matched log-pattern categories, with repeated hits increasing the contribution of the same category and each category saturating at $2w_c$. Attack volume is represented by $h_{\text{brute}}$ inside the attack-oriented <span class="kcode">brute_force</span> category, avoiding double counting.</p>
 
     <div class="formula">
       <span class="eq-tag">EQ. 3a</span>
@@ -828,12 +827,62 @@ footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
 
   </section>
 
+  <!-- A : formal audit -->
+  <section id="audit">
+    <div class="sec-head"><span class="sec-num">A</span><h2>Formal audit note</h2></div>
+    <p class="lede">The central revision is deliberately conservative: the specification removes the special-case authentication-volume bonus while preserving the original category-frequency mechanism.</p>
+    <div class="principle-box">
+      <div class="principle-label">SEMANTIC DISTINCTION</div>
+      <p><strong>Telemetry is not automatically a threat.</strong> A failed authentication is an observable event and may be benign. The formal threat score should operate on <em>detected attack evidence</em>. For authentication-based attacks, the appropriate category is therefore an attack-oriented concept such as <span class="kcode">brute_force</span>, whose hit count $h_{\text{brute}}$ represents repeated evidence after the detection rule has identified the pattern.</p>
+    </div>
 
+
+    <div class="audit-grid">
+      <div class="audit-card">
+        <div class="audit-tag">REMOVED</div>
+        <h3>Second count of the same evidence</h3>
+        <p>The former $\beta(h_{\text{auth}})$ term introduced a second score component based on authentication-failure volume, even though the formal scoring model already has frequency-dependent category contributions.</p>
+      </div>
+      <div class="audit-card">
+        <div class="audit-tag">RETAINED</div>
+        <h3>Attack evidence still accumulates</h3>
+        <p>The existing $h_c$ mechanism remains intact: repeated observations increase the contribution of the corresponding <em>detected threat category</em>, with diminishing returns and saturation at $2w_c$.</p>
+      </div>
+      <div class="audit-card">
+        <div class="audit-tag">CLAIM BOUNDARY</div>
+        <h3>No unsupported guarantee</h3>
+        <p>The revised note no longer claims that brute-force traffic <em>always</em> crosses $\theta=45$. That would require the concrete category weights and executable test cases, which are not included in the supplied HTML.</p>
+      </div>
+    </div>
+
+    <div class="audit-flow">
+      <span>raw telemetry</span><b>→</b>
+      <span>detection rule</span><b>→</b>
+      <span>attack category</span><b>→</b>
+      <span>hit count $h_c$</span><b>→</b>
+      <span>threat score $q_t$</span>
+    </div>
+
+    <div class="formula">
+      <span class="eq-tag">EQ. 3 · CLEAN FORM</span>
+      $$
+      q_t = \min\!\left(
+      100,
+      \sum_{c\in C}
+      \min\!\left(
+      w_c + (h_c-1)\cdot\max\!\left(2,\left\lfloor\frac{w_c}{4}\right\rfloor\right),
+      2w_c
+      \right)
+      \right)
+      $$
+    </div>
+    <div class="formula-caption"><b>Interpretation.</b> Each observed category contributes once. Frequency changes that category's contribution through $h_c$; the same evidence is not added again through a second volume-specific term.</div>
+  </section>
 
   <!-- 06 : signature element -->
   <section id="pipeline">
     <div class="sec-head"><span class="sec-num">06</span><h2>Pipeline topology</h2></div>
-    <p class="lede">The closed-loop state transitions implemented by the multi-agent workflow.</p>
+    <p class="lede">The closed-loop state transitions represented by the specified workflow. Because the supplied artifact contains the formal note but not the executable <span class="kcode">src/</span> and <span class="kcode">k8s/</span> sources, this diagram is treated as specification-level evidence rather than an independently verified execution trace.</p>
 
     <div class="topology">
       <div class="topology-head">
@@ -931,7 +980,7 @@ footer{margin-top:54px;padding:26px 0 50px;border-top:1px solid #bfc3bf;}
       </div>
       <div>
         <div class="label">Source</div>
-        <p>Formal specification for the NexusGuard multi-agent threat mitigation system. All definitions are tied to the executable implementation.</p>
+        <p>Formal-audit revision based on the supplied NexusGuard specification. Executable <span class="kcode">src/</span> and <span class="kcode">k8s/</span> sources were not included in this artifact and are therefore not independently verified here.</p>
       </div>
     </div>
   </footer>
