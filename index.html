@@ -291,6 +291,9 @@ window.MathJax = {
       <div><strong>Author</strong>Yassine Hakkache</div>
       <div><strong>System</strong>Multi-Agent LLM Kubernetes Defense</div>
       <div><strong>Status</strong>Research idea, formalized for clarity</div>
+      <div><strong>Cluster</strong>k3s (DigitalOcean droplet)</div>
+      <div><strong>LLM</strong>Ollama · qwen2.5:7b</div>
+      <div><strong>Orchestration</strong>LangGraph state machine</div>
     </div>
   </header>
 
@@ -308,7 +311,8 @@ window.MathJax = {
       <li><span class="num">04</span><a href="#gate">Human-gated transition</a></li>
       <li><span class="num">05</span><a href="#verify">Verification &amp; bounded retry</a></li>
       <li><span class="num">06</span><a href="#pipeline">Pipeline topology</a></li>
-      <li><span class="num">07</span><a href="#reflection">Reflection</a></li>
+      <li><span class="num">07</span><a href="#deployment">Implementation &amp; deployment</a></li>
+      <li><span class="num">08</span><a href="#reflection">Reflection</a></li>
     </ol>
   </nav>
 
@@ -584,8 +588,30 @@ window.MathJax = {
   </section>
 
   <!-- 07 -->
+  <section id="deployment">
+    <div class="sec-head"><span class="sec-num">07</span><h2>Implementation &amp; deployment</h2></div>
+    <p class="lede">The loop above isn't just theory — it's running as code, on a real cluster. This section says what it's actually built on and what "running" means here.</p>
+
+    <table class="deftable">
+      <tr><th>Layer</th><th>Choice</th><th>Notes</th></tr>
+      <tr><td>Orchestration</td><td>LangGraph state machine</td><td>each node in EQ. 1 (𝓑, 𝓞, 𝓗, 𝓡) maps to one graph node; the router enforces the retry budget $K$ from EQ. 9</td></tr>
+      <tr><td>Cluster</td><td>k3s</td><td>lightweight Kubernetes, single-node, deployed on a DigitalOcean droplet</td></tr>
+      <tr><td>LLM</td><td>Ollama, qwen2.5:7b</td><td>in-cluster service, reasoning agent for Blue/Orchestrator/Red where enabled</td></tr>
+      <tr><td>Deterministic fallback</td><td>heuristic scorer + rule-based orchestrator/verifier</td><td>the LLM path can fail or drift; a deterministic path (the one EQ. 4 actually describes) is the default so the system doesn't depend on the model behaving</td></tr>
+      <tr><td>HITL gate</td><td>web dashboard + ConfigMap-backed approval store</td><td>a pending request blocks the mitigation until a human clicks approve/reject; decisions are picked up on the next cycle rather than the workflow blocking synchronously</td></tr>
+      <tr><td>Mitigation target</td><td>NetworkPolicy objects</td><td>the Orchestrator's action space in EQ. 5 is scoped to blocking/isolating via Kubernetes-native policy, not arbitrary cluster mutation</td></tr>
+    </table>
+
+    <div class="implementation-note">
+      <span>Status</span>Running as a continuous loop against a live k3s cluster, cycling every 30 seconds. This is a proof of concept I run myself to test the design, not a managed or production service.
+    </div>
+
+    <p>Worth being honest about here: this is still evolving, and the deterministic paths exist precisely because the LLM-driven paths aren't yet reliable enough to trust unsupervised — which is itself consistent with the whole point of the human gate in EQ. 6–7.</p>
+  </section>
+
+  <!-- 08 -->
   <section id="reflection">
-    <div class="sec-head"><span class="sec-num">07</span><h2>Reflection</h2></div>
+    <div class="sec-head"><span class="sec-num">08</span><h2>Reflection</h2></div>
     <p class="lede">A few honest notes on what I actually got out of formalizing this, instead of just describing it.</p>
     <p>Writing the scoring rule out as an actual formula (EQ. 4), instead of hand-waving with "the agent decides," was probably the single most useful thing I did on this project. It's the only reason I caught the double-counting mistake I mention above, where the same piece of evidence could quietly influence the score through two different paths at once. A formula makes that kind of bug impossible to miss; a paragraph of prose hides it pretty easily.</p>
     <p>Same story with the human-gate rule. Writing it as a total function (EQ. 6a) forces me to give an explicit answer for every possible action, including ones the system has never seen before. That's actually what pushed the design toward "unknown action → treat it as HIGH risk, ask a human" instead of quietly assuming anything not on a blocklist must be fine.</p>
@@ -597,7 +623,7 @@ window.MathJax = {
     <div class="colophon">
       <div>
         <div class="label">About this note</div>
-        <p>A formal sketch of the reasoning behind NexusGuard — written to make an AI-driven cybersecurity workflow idea explicit and checkable, not to document a specific live deployment.</p>
+        <p>A formal sketch of the reasoning behind NexusGuard, plus notes on the k3s proof-of-concept it runs on — written to make an AI-driven cybersecurity workflow idea explicit and checkable, not to document a hardened production system.</p>
       </div>
       <div>
         <div class="label">Author</div>
